@@ -65,6 +65,15 @@ Sigue `blueprism/GUIA_BLUE_PRISM.md`. Lo único que configuras es el dato **URL 
 
 > Para reiniciar los datos antes de presentar: entra como Planificación central → **Reportes BUK / SIC → Reiniciar demo**.
 
+## ¿Dónde se puede desplegar?
+
+| Opción | ¿Sirve? | Por qué |
+|---|---|---|
+| **Render** (Web Service gratis) | ✅ **Recomendado** | Corre el servidor Node completo (API + front en una sola URL), con PDF, carga de Excel y estado en memoria. Ya está listo con `render.yaml` |
+| Railway / Fly.io / Koyeb | ✅ | Igual que Render: un servicio Node con `npm install && npm run build` y `npm start` |
+| **Vercel** | ⚠️ Solo el front | Vercel ejecuta el backend como funciones *serverless* que se apagan entre llamadas: el motor guarda una caché en memoria, la carga de archivos y la generación de PDF superan sus límites y el robot necesita una API estable. Si quieres usar Vercel, publica ahí `client/` y deja la API en Render |
+| Tu PC (`npm start`) | ✅ Para la demo | Blue Prism y la app en la misma máquina, sin depender de internet |
+
 ## Datos
 - `server/seed/seed.json`: generado desde los Excel entregados (`tools/build_seed.py`).
 - `data/BUK_2026-08_novedades.xlsx`: reporte BUK de agosto simulado con 10 novedades (2 altas + 1 reemplazo, 2 bajas, término de contrato, 3 cambios de jornada, cambio de cargo) y 6 errores intencionales.

@@ -166,10 +166,10 @@ def build_process():
     cfg = [('URL API', 'text', 'http://localhost:3000', 'URL de la plataforma (Render o local), sin / final'),
            ('Email Robot', 'text', 'bot@teleton.cl', 'Cuenta técnica con rol bot'),
            ('Password Robot', 'text', 'Teleton2026', 'Contraseña (en producción usar Credential Manager)'),
-           ('Carpeta Entrada', 'text', r'C:\Teleton\Entrada', 'Aquí GP deja los reportes BUK y SIC'),
-           ('Carpeta Procesados', 'text', r'C:\Teleton\Procesados', ''),
-           ('Carpeta Errores', 'text', r'C:\Teleton\Errores', 'CSV con filas rechazadas y archivos con fallas'),
-           ('Carpeta Reportes', 'text', r'C:\Teleton\Reportes', 'PDF por instituto para jefaturas')]
+           ('Carpeta Entrada', 'text', r'C:\Users\khrva\OneDrive\Desktop\Botathon\robot\Entrada', 'Aquí GP deja los reportes BUK y SIC'),
+           ('Carpeta Procesados', 'text', r'C:\Users\khrva\OneDrive\Desktop\Botathon\robot\Procesados', ''),
+           ('Carpeta Errores', 'text', r'C:\Users\khrva\OneDrive\Desktop\Botathon\robot\Errores', 'CSV con filas rechazadas y archivos con fallas'),
+           ('Carpeta Reportes', 'text', r'C:\Users\khrva\OneDrive\Desktop\Botathon\robot\Reportes', 'PDF por instituto para jefaturas')]
     note(main, 'Configuracion', 'CONFIGURACIÓN: edita los valores iniciales de estos datos antes de ejecutar (URL de la plataforma y carpetas).', 330, -275, 230, 40)
     for k, (n, t, v, d) in enumerate(cfg):
         data_stage(main, n, t, 330 + (k % 2) * 120, -215 + (k // 2) * 50, init=v, private=False, narrative=d)

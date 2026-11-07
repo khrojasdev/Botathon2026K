@@ -2,7 +2,7 @@
 <bpr:release xmlns:bpr="http://www.blueprism.co.uk/product/release">
 <bpr:name>Cada hora cuenta - Botathon 2026</bpr:name>
 <bpr:release-notes>Objeto Teleton - API Conector y proceso Teleton - Ingesta BUK SIC.</bpr:release-notes>
-<bpr:created>2026-11-07T01:18:02</bpr:created>
+<bpr:created>2026-11-07T01:39:22</bpr:created>
 <bpr:package-id>1</bpr:package-id>
 <bpr:package-name>Cada hora cuenta</bpr:package-name>
 <bpr:user-created-by>admin</bpr:user-created-by>
@@ -575,10 +575,10 @@ Exito = fi.Length > 0;
 <stage stageid="d7a618f1-abfd-5317-b66e-c86d978a0b81" name="URL API" type="Data"><narrative>URL de la plataforma (Render o local), sin / final</narrative><display x="330" y="-215" w="90" h="30" /><datatype>text</datatype><initialvalue xml:space="preserve">http://localhost:3000</initialvalue><alwaysinit /></stage>
 <stage stageid="8e6df28b-e6ad-561a-8031-df238140ff6a" name="Email Robot" type="Data"><narrative>Cuenta técnica con rol bot</narrative><display x="450" y="-215" w="90" h="30" /><datatype>text</datatype><initialvalue xml:space="preserve">bot@teleton.cl</initialvalue><alwaysinit /></stage>
 <stage stageid="cd15e58f-710d-58ee-8194-ad75ba6a079d" name="Password Robot" type="Data"><narrative>Contraseña (en producción usar Credential Manager)</narrative><display x="330" y="-165" w="90" h="30" /><datatype>text</datatype><initialvalue xml:space="preserve">Teleton2026</initialvalue><alwaysinit /></stage>
-<stage stageid="e284673e-f372-597b-b8f4-4368801d884c" name="Carpeta Entrada" type="Data"><narrative>Aquí GP deja los reportes BUK y SIC</narrative><display x="450" y="-165" w="90" h="30" /><datatype>text</datatype><initialvalue xml:space="preserve">C:\Teleton\Entrada</initialvalue><alwaysinit /></stage>
-<stage stageid="019730fc-6fe5-5af3-8888-f443a06f948e" name="Carpeta Procesados" type="Data"><narrative></narrative><display x="330" y="-115" w="90" h="30" /><datatype>text</datatype><initialvalue xml:space="preserve">C:\Teleton\Procesados</initialvalue><alwaysinit /></stage>
-<stage stageid="7c94d254-57fd-5ddc-86fb-29bcea2dad39" name="Carpeta Errores" type="Data"><narrative>CSV con filas rechazadas y archivos con fallas</narrative><display x="450" y="-115" w="90" h="30" /><datatype>text</datatype><initialvalue xml:space="preserve">C:\Teleton\Errores</initialvalue><alwaysinit /></stage>
-<stage stageid="c0877118-cae4-5a85-861e-b3ca48c0d22e" name="Carpeta Reportes" type="Data"><narrative>PDF por instituto para jefaturas</narrative><display x="330" y="-65" w="90" h="30" /><datatype>text</datatype><initialvalue xml:space="preserve">C:\Teleton\Reportes</initialvalue><alwaysinit /></stage>
+<stage stageid="e284673e-f372-597b-b8f4-4368801d884c" name="Carpeta Entrada" type="Data"><narrative>Aquí GP deja los reportes BUK y SIC</narrative><display x="450" y="-165" w="90" h="30" /><datatype>text</datatype><initialvalue xml:space="preserve">C:\Users\khrva\OneDrive\Desktop\Botathon\robot\Entrada</initialvalue><alwaysinit /></stage>
+<stage stageid="019730fc-6fe5-5af3-8888-f443a06f948e" name="Carpeta Procesados" type="Data"><narrative></narrative><display x="330" y="-115" w="90" h="30" /><datatype>text</datatype><initialvalue xml:space="preserve">C:\Users\khrva\OneDrive\Desktop\Botathon\robot\Procesados</initialvalue><alwaysinit /></stage>
+<stage stageid="7c94d254-57fd-5ddc-86fb-29bcea2dad39" name="Carpeta Errores" type="Data"><narrative>CSV con filas rechazadas y archivos con fallas</narrative><display x="450" y="-115" w="90" h="30" /><datatype>text</datatype><initialvalue xml:space="preserve">C:\Users\khrva\OneDrive\Desktop\Botathon\robot\Errores</initialvalue><alwaysinit /></stage>
+<stage stageid="c0877118-cae4-5a85-861e-b3ca48c0d22e" name="Carpeta Reportes" type="Data"><narrative>PDF por instituto para jefaturas</narrative><display x="330" y="-65" w="90" h="30" /><datatype>text</datatype><initialvalue xml:space="preserve">C:\Users\khrva\OneDrive\Desktop\Botathon\robot\Reportes</initialvalue><alwaysinit /></stage>
 <stage stageid="7b5cdf70-53fd-55e3-bd49-080fce8ed1aa" name="Token" type="Data"><narrative></narrative><display x="330" y="-5" w="90" h="30" /><datatype>text</datatype><initialvalue /><alwaysinit /></stage>
 <stage stageid="b39c2b8f-27e9-5d37-80fd-47ddd2486bfd" name="Login OK" type="Data"><narrative></narrative><display x="450" y="-5" w="90" h="30" /><datatype>flag</datatype><initialvalue xml:space="preserve">False</initialvalue><private /><alwaysinit /></stage>
 <stage stageid="43cbafca-ec11-554e-ad55-f38055271bb6" name="Mensaje" type="Data"><narrative></narrative><display x="330" y="45" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>

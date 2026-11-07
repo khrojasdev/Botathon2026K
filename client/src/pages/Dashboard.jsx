@@ -6,6 +6,7 @@ import { Page, useApp } from '../App.jsx';
 import Filters, { useFilters } from '../components/Filters.jsx';
 import { Panel, Kpi, HourBar, useAsync, Loading, Badge, SortTh, sortRows, useToast } from '../components/ui.jsx';
 import { fmt, pct, hhmm, fecha, AREAS } from '../util.js';
+import { Txt } from '../facil.jsx';
 
 export function speak(text) {
   if (!('speechSynthesis' in window)) return false;
@@ -81,11 +82,11 @@ function DashboardBody({ data, loading, sort, setSort, set, nav }) {
       </section>
 
       <div className="kpis" aria-label="Indicadores">
-        <Kpi label="Atenciones planificadas" value={fmt(t.planTot)} hint={`${fmt(t.planDir)} directas · ${fmt(t.planInd)} indirectas`} />
-        <Kpi meta label={`Meta de gestión asistencial (${Math.round(meta * 100)}%)`} value={fmt(t.mgTot)} hint={`Directas ${fmt(t.mgDir)} · piso mínimo`} />
-        <Kpi label="% FOJA" value={pct(t.foja)} hint="Horas directas / horas contratadas" bar={t.foja} />
-        <Kpi label="Cumplimiento vs. meta (SIC)" value={t.cumplimiento == null ? 'Sin datos' : pct(t.cumplimiento)} hint={t.cumplimiento == null ? 'Carga el reporte SIC' : `${fmt(t.sicReal)} directas realizadas`} bar={t.cumplimiento} />
-        <Kpi label="Alertas" value={fmt(data.alertas.sicTotal + data.alertas.reglas)} hint={`${data.alertas.sicTotal} desviación SIC · ${data.alertas.reglas} reglas`} />
+        <Kpi label={<Txt t="Atenciones planificadas" f="Atenciones que haremos este año" />} value={fmt(t.planTot)} hint={`${fmt(t.planDir)} directas · ${fmt(t.planInd)} indirectas`} />
+        <Kpi meta label={<Txt t={`Meta de gestión asistencial (${Math.round(meta * 100)}%)`} f="Lo mínimo que debemos cumplir" />} value={fmt(t.mgTot)} hint={<Txt t={`Directas ${fmt(t.mgDir)} · piso mínimo`} f={`Es el ${Math.round(meta * 100)}% de lo planificado`} />} />
+        <Kpi label={<Txt t="% FOJA" f="Tiempo con pacientes (FOJA)" />} value={pct(t.foja)} hint={<Txt t="Horas directas / horas contratadas" f="Indicador oficial: horas directas sobre horas de contrato" />} bar={t.foja} />
+        <Kpi label={<Txt t="Cumplimiento vs. meta (SIC)" f="Cuánto llevamos de la meta" />} value={t.cumplimiento == null ? 'Sin datos' : pct(t.cumplimiento)} hint={t.cumplimiento == null ? 'Carga el reporte SIC' : `${fmt(t.sicReal)} directas realizadas`} bar={t.cumplimiento} />
+        <Kpi label={<Txt t="Alertas" f="Casos que necesitan apoyo" />} value={fmt(data.alertas.sicTotal + data.alertas.reglas)} hint={`${data.alertas.sicTotal} desviación SIC · ${data.alertas.reglas} reglas`} />
       </div>
 
       <Panel title="Proyección mensual" subtitle="Atenciones planificadas, meta de gestión y realizado según SIC" id="p-mes">
@@ -120,14 +121,14 @@ function DashboardBody({ data, loading, sort, setSort, set, nav }) {
                 <SortTh k="dotacion" sort={sort} setSort={setSort} n>Dotación</SortTh>
                 <SortTh k="horasSem" sort={sort} setSort={setSort} n>Horas sem.</SortTh>
                 <th style={{ minWidth: 150 }}>Reparto semanal</th>
-                <SortTh k="dirSem" sort={sort} setSort={setSort} n>H/sem directa</SortTh>
-                <SortTh k="indSem" sort={sort} setSort={setSort} n>H/sem indirecta</SortTh>
-                <SortTh k="nasSem" sort={sort} setSort={setSort} n>H/sem NAS</SortTh>
-                <SortTh k="planDir" sort={sort} setSort={setSort} n>At. directas</SortTh>
-                <SortTh k="planInd" sort={sort} setSort={setSort} n>At. indirectas</SortTh>
+                <SortTh k="dirSem" sort={sort} setSort={setSort} n cls="tec">H/sem directa</SortTh>
+                <SortTh k="indSem" sort={sort} setSort={setSort} n cls="tec">H/sem indirecta</SortTh>
+                <SortTh k="nasSem" sort={sort} setSort={setSort} n cls="tec">H/sem NAS</SortTh>
+                <SortTh k="planDir" sort={sort} setSort={setSort} n cls="tec">At. directas</SortTh>
+                <SortTh k="planInd" sort={sort} setSort={setSort} n cls="tec">At. indirectas</SortTh>
                 <SortTh k="planTot" sort={sort} setSort={setSort} n>Total atenciones</SortTh>
                 <SortTh k="mgTot" sort={sort} setSort={setSort} n>Meta {Math.round(meta * 100)}%</SortTh>
-                <SortTh k="foja" sort={sort} setSort={setSort} n>% FOJA</SortTh>
+                <SortTh k="foja" sort={sort} setSort={setSort} n cls="tec">% FOJA</SortTh>
                 <SortTh k="cumplimiento" sort={sort} setSort={setSort} n>Cumpl. SIC</SortTh>
               </tr>
             </thead>
@@ -138,23 +139,23 @@ function DashboardBody({ data, loading, sort, setSort, set, nav }) {
                   <td className="n">{fmt(x.dotacion)}</td>
                   <td className="n">{fmt(x.horasSem)}</td>
                   <td><HourBar dir={x.dirSem} ind={x.indSem} total={x.horasSem} /></td>
-                  <td className="n">{hhmm(x.dirSem)}</td>
-                  <td className="n">{hhmm(x.indSem)}</td>
-                  <td className="n">{hhmm(x.nasSem)}</td>
-                  <td className="n">{fmt(x.planDir)}</td>
-                  <td className="n">{fmt(x.planInd)}</td>
+                  <td className="n tec">{hhmm(x.dirSem)}</td>
+                  <td className="n tec">{hhmm(x.indSem)}</td>
+                  <td className="n tec">{hhmm(x.nasSem)}</td>
+                  <td className="n tec">{fmt(x.planDir)}</td>
+                  <td className="n tec">{fmt(x.planInd)}</td>
                   <td className="n"><b>{fmt(x.planTot)}</b></td>
                   <td className="n" style={{ color: 'var(--red)' }}>{fmt(x.mgTot)}</td>
-                  <td className="n">{pct(x.foja)}</td>
+                  <td className="n tec">{pct(x.foja)}</td>
                   <td className="n">{x.cumplimiento == null ? '—' : <Badge tone={x.cumplimiento >= 1 ? 'ok' : x.cumplimiento >= 0.9 ? 'warn' : 'red'}>{pct(x.cumplimiento)}</Badge>}</td>
                 </tr>
               ))}
               <tr className="total">
                 <td>Total general</td><td className="n">{fmt(t.dotacion)}</td><td className="n">{fmt(t.horasSem)}</td>
                 <td><HourBar dir={t.dirSem} ind={t.indSem} total={t.horasSem} /></td>
-                <td className="n">{hhmm(t.dirSem)}</td><td className="n">{hhmm(t.indSem)}</td><td className="n">{hhmm(t.nasSem)}</td>
-                <td className="n">{fmt(t.planDir)}</td><td className="n">{fmt(t.planInd)}</td><td className="n">{fmt(t.planTot)}</td>
-                <td className="n">{fmt(t.mgTot)}</td><td className="n">{pct(t.foja)}</td><td className="n">{pct(t.cumplimiento)}</td>
+                <td className="n tec">{hhmm(t.dirSem)}</td><td className="n tec">{hhmm(t.indSem)}</td><td className="n tec">{hhmm(t.nasSem)}</td>
+                <td className="n tec">{fmt(t.planDir)}</td><td className="n tec">{fmt(t.planInd)}</td><td className="n">{fmt(t.planTot)}</td>
+                <td className="n">{fmt(t.mgTot)}</td><td className="n tec">{pct(t.foja)}</td><td className="n">{pct(t.cumplimiento)}</td>
               </tr>
             </tbody>
           </table>

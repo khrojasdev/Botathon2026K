@@ -454,12 +454,14 @@ Institutos = new DataTable("Institutos");
 Institutos.Columns.Add("IT", typeof(decimal));
 Institutos.Columns.Add("Codigo", typeof(string));
 Institutos.Columns.Add("Nombre", typeof(string));
+Institutos.Columns.Add("Correo", typeof(string));
+Institutos.Columns.Add("Resumen", typeof(string));
 foreach (System.Text.RegularExpressions.Match m in System.Text.RegularExpressions.Regex.Matches(resp, "\\{[^{}]*\\}"))
 {
     string o = m.Value;
     decimal it;
     if (decimal.TryParse(JsonCampo(o, "IT"), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out it))
-        Institutos.Rows.Add(it, JsonCampo(o, "Codigo"), JsonCampo(o, "Nombre"));
+        Institutos.Rows.Add(it, JsonCampo(o, "Codigo"), JsonCampo(o, "Nombre"), JsonCampo(o, "Correo"), JsonCampo(o, "Resumen"));
 }
 
 }
@@ -478,6 +480,35 @@ using (var wc = new System.Net.WebClient())
 var fi = new System.IO.FileInfo(Ruta);
 Bytes = fi.Length;
 Exito = fi.Length > 0;
+
+}
+public void Preparar_Correo(string Para, string Asunto, string Cuerpo, string Adjunto, string Carpeta, out string RutaEml) {
+  RutaEml = "";
+
+if (!System.IO.Directory.Exists(Carpeta)) System.IO.Directory.CreateDirectory(Carpeta);
+var enc = System.Text.Encoding.UTF8;
+string limite = "----=_ChC_" + System.Guid.NewGuid().ToString("N");
+var sb = new System.Text.StringBuilder();
+sb.Append("X-Unsent: 1\r\n");
+sb.Append("To: " + Para + "\r\n");
+sb.Append("Subject: =?utf-8?B?" + System.Convert.ToBase64String(enc.GetBytes(Asunto ?? "")) + "?=\r\n");
+sb.Append("MIME-Version: 1.0\r\n");
+sb.Append("Content-Type: multipart/mixed; boundary=\"" + limite + "\"\r\n\r\n");
+sb.Append("--" + limite + "\r\n");
+sb.Append("Content-Type: text/plain; charset=utf-8\r\nContent-Transfer-Encoding: base64\r\n\r\n");
+sb.Append(System.Convert.ToBase64String(enc.GetBytes(Cuerpo ?? ""), System.Base64FormattingOptions.InsertLineBreaks) + "\r\n");
+if (!string.IsNullOrEmpty(Adjunto) && System.IO.File.Exists(Adjunto))
+{
+    string nombre = System.IO.Path.GetFileName(Adjunto);
+    sb.Append("--" + limite + "\r\n");
+    sb.Append("Content-Type: application/pdf; name=\"" + nombre + "\"\r\nContent-Transfer-Encoding: base64\r\n");
+    sb.Append("Content-Disposition: attachment; filename=\"" + nombre + "\"\r\n\r\n");
+    sb.Append(System.Convert.ToBase64String(System.IO.File.ReadAllBytes(Adjunto), System.Base64FormattingOptions.InsertLineBreaks) + "\r\n");
+}
+sb.Append("--" + limite + "--\r\n");
+string baseNombre = string.IsNullOrEmpty(Adjunto) ? "Correo" : System.IO.Path.GetFileNameWithoutExtension(Adjunto);
+RutaEml = System.IO.Path.Combine(Carpeta, baseNombre + ".eml");
+System.IO.File.WriteAllText(RutaEml, sb.ToString(), new System.Text.UTF8Encoding(false));
 
 }
 }

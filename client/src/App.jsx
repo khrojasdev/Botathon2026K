@@ -16,6 +16,8 @@ import Validacion from './pages/Validacion.jsx';
 import MiPlan from './pages/MiPlan.jsx';
 import Cobertura from './pages/Cobertura.jsx';
 import Proyeccion from './pages/Proyeccion.jsx';
+import Asistente from './components/Asistente.jsx';
+import { setFacil, useFacil } from './facil.jsx';
 
 const Ctx = createContext(null);
 export const useApp = () => useContext(Ctx);
@@ -35,6 +37,7 @@ const NAV = [
 ];
 
 function A11yTools() {
+  const facil = useFacil();
   const [a, setA] = useState(() => { try { return JSON.parse(localStorage.getItem('chc_a11y') || '{}'); } catch { return {}; } });
   useEffect(() => {
     document.documentElement.dataset.size = a.size || '';
@@ -46,6 +49,7 @@ function A11yTools() {
     <div className="row" role="group" aria-label="Accesibilidad">
       {sizes.map(([v, l]) => <button key={l} className="btn sm" aria-pressed={(a.size || '') === v} onClick={() => setA({ ...a, size: v })} aria-label={`Tamaño de texto ${l}`}>{l}</button>)}
       <button className="btn sm" aria-pressed={a.contrast === 'alto'} onClick={() => setA({ ...a, contrast: a.contrast === 'alto' ? '' : 'alto' })}>Alto contraste</button>
+      <button className="btn sm" aria-pressed={facil} onClick={() => setFacil(!facil)}>Lectura fácil</button>
     </div>
   );
 }
@@ -83,6 +87,7 @@ function Shell({ children }) {
         <button className="btn menu-btn" style={{ margin: 8, alignSelf: 'flex-start' }} onClick={() => setOpen(!open)} aria-expanded={open}>☰ Menú</button>
         {children}
       </div>
+      {user.permisos.includes('ver') && <Asistente />}
     </div>
   );
 }

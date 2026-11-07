@@ -108,10 +108,10 @@ export function MotivoModal({ title, children, onConfirm, onClose, confirmLabel 
   );
 }
 
-export function SortTh({ k, sort, setSort, children, n }) {
+export function SortTh({ k, sort, setSort, children, n, cls = '' }) {
   const active = sort.key === k;
   return (
-    <th className={n ? 'n' : ''} aria-sort={active ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}>
+    <th className={`${n ? 'n' : ''} ${cls}`} aria-sort={active ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}>
       <button className="sort" onClick={() => setSort({ key: k, dir: active && sort.dir === 'desc' ? 'asc' : 'desc' })}>
         {children}{active ? (sort.dir === 'asc' ? ' ▲' : ' ▼') : ''}
       </button>

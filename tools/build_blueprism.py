@@ -11,6 +11,9 @@ from bp_code import GLOBAL, ACTIONS
 BPVERSION = '6.10.1.12345'
 OBJ = 'Teleton - API Conector'
 PROC = 'Teleton - Ingesta BUK SIC'
+PROC2 = 'Teleton - Ingesta BUK SIC v2'
+QUEUE = 'Teleton - Reportes'
+WQ = 'Blueprism.Automate.clsWorkQueuesActions'
 NS = uuid.UUID('6f1c1d0e-5b7a-4c2e-9d8f-0a1b2c3d4e5f')
 gid = lambda *k: str(uuid.uuid5(NS, '|'.join(map(str, k))))
 q = quoteattr
@@ -70,7 +73,7 @@ def build_object():
              f'<narrative>Conector entre Blue Prism y la plataforma "Cada hora cuenta": lee reportes Excel de BUK y SIC sin Office, los valida, envía lo válido a la API, informa errores y descarga reportes por instituto.</narrative>'
              f'{disp(-195, -105, 150, 90)}<references>' + ''.join(f'<reference>{r}</reference>' for r in refs) + '</references>'
              '<imports>' + ''.join(f'<import>{i}</import>' for i in imps) + '</imports>'
-             f'<language>csharp</language><globalcode><![CDATA[{GLOBAL}]]></globalcode><code-options /></stage>')
+             f'<language>csharp</language><globalcode><![CDATA[]]></globalcode><code><![CDATA[{GLOBAL}]]></code></stage>')
     main.add(f'<stage stageid="{main.id("note")}" name="Nota" type="Note"><narrative>Cada hora cuenta · Botathon Teletón 2026. Objeto sin dependencias de Microsoft Office: lee .xlsx con System.IO.Compression.</narrative>{disp(-195, 30, 150, 60)}</stage>')
     # Clean Up
     cu = Page(OBJ, 'Clean Up', gid(OBJ, 'page', 'Clean Up'))
@@ -110,9 +113,9 @@ def build_object():
 # =====================================================================
 # PROCESO
 # =====================================================================
-def action(p, sid, name, act, x, y, ins, outs, nxt_id, narrative=''):
+def action(p, sid, name, act, x, y, ins, outs, nxt_id, narrative='', obj=OBJ):
     p.add(f'<stage stageid="{sid}" name={q(name)} type="Action">{p.sub()}<narrative>{escape(narrative)}</narrative><loginhibit onsuccess="true" />{disp(x, y, 90, 30)}'
-          + inputs_xml(ins) + outputs_xml(outs) + nxt(nxt_id) + f'<resource object={q(OBJ)} action={q(act)} /></stage>')
+          + inputs_xml(ins) + outputs_xml(outs) + nxt(nxt_id) + f'<resource object={q(obj)} action={q(act)} /></stage>')
 
 def calc(p, sid, name, expr, target, x, y, nxt_id):
     p.add(f'<stage stageid="{sid}" name={q(name)} type="Calculation">{p.sub()}<loginhibit onsuccess="true" />{disp(x, y, 90, 30)}{nxt(nxt_id)}'
@@ -124,7 +127,7 @@ def decision(p, sid, name, expr, x, y, t, f):
 def note(p, name, text, x, y, w=210, h=90):
     p.add(f'<stage stageid="{p.id("note:" + name)}" name={q(name)} type="Note">{p.sub()}<narrative>{escape(text)}</narrative>{disp(x, y, w, h)}</stage>')
 
-def build_process():
+def build_process(PROC=PROC, cola=False):
     main = Page(PROC, 'Main Page')
     pf = Page(PROC, 'Procesar Archivo', gid(PROC, 'page', 'Procesar Archivo'))
     pr = Page(PROC, 'Distribuir Reportes', gid(PROC, 'page', 'Distribuir Reportes'))
@@ -144,10 +147,12 @@ def build_process():
     action(main, I('listar'), 'Listar reportes pendientes', 'Listar Archivos', 15, -15,
            [('text', 'Carpeta', '[Carpeta Entrada]'), ('text', 'Patron', '"*.xlsx"')],
            [('collection', 'Archivos', 'Archivos'), ('number', 'Cantidad', 'Cantidad Archivos')], I('d_hay'))
-    decision(main, I('d_hay'), '¿Hay archivos?', '[Cantidad Archivos] > 0', 15, 45, I('loop_s'), I('latido_nada'))
+    decision(main, I('d_hay'), '¿Hay archivos?', '[Cantidad Archivos] > 0', 15, 45, I('encolar') if cola else I('loop_s'), I('latido_nada'))
     action(main, I('latido_nada'), 'Latido sin archivos', 'Latido', 165, 45,
            [('text', 'UrlBase', '[URL API]'), ('text', 'Token', '[Token]'), ('text', 'Mensaje', '"Sin reportes nuevos en la carpeta de entrada"'), ('number', 'Archivos', '0')],
            [], I('end'))
+    if cola:
+        build_cola(main, pf, pr)
     g1 = gid(PROC, 'loop', 'archivos')
     main.add(f'<stage stageid="{I("loop_s")}" name="Por cada archivo" type="LoopStart"><loginhibit />{disp(15, 105, 90, 30)}{nxt(I("call_proc"))}'
              f'<groupid>{g1}</groupid><looptype>ForEach</looptype><loopdata>Archivos</loopdata></stage>')
@@ -209,7 +214,8 @@ def build_process():
            [('text', 'Origen', '[Ruta]'), ('text', 'CarpetaDestino', '[Carpeta Errores]')], [('text', 'NuevaRuta', 'Nueva Ruta')], P('latido'))
     action(pf, P('latido'), 'Informar resultado', 'Latido', 15, 285,
            [('text', 'UrlBase', '[URL API]'), ('text', 'Token', '[Token]'), ('text', 'Mensaje', '[Nombre] & ": " & [Respuesta Mensaje]'), ('number', 'Archivos', '[Cantidad Archivos]')], [], P('end'))
-    pf.add(f'<stage stageid="{P("end")}" name="End" type="End">{pf.sub()}<loginhibit />{disp(15, 345)}</stage>')
+    pf.add(f'<stage stageid="{P("end")}" name="End" type="End">{pf.sub()}<loginhibit />{disp(15, 345)}'
+           + ('<outputs><output type="flag" name="OK" stage="Envio OK" /><output type="text" name="Mensaje" stage="Respuesta Mensaje" /></outputs>' if cola else '') + '</stage>')
     # manejo de excepciones de la página
     pf.add(f'<stage stageid="{P("recover")}" name="Recover" type="Recover">{pf.sub()}{disp(330, 105, 60, 30)}{nxt(P("c_exc"))}</stage>')
     calc(pf, P('c_exc'), 'Detalle excepción', '"Falla procesando " & [Nombre] & ": " & ExceptionDetail()', 'Respuesta Mensaje', 330, 165, P('mover_exc'))
@@ -235,50 +241,87 @@ def build_process():
     calc(pr, R('c_url'), 'URL del PDF', '[URL API] & "/api/reportes/instituto/" & [Institutos.IT] & ".pdf"', 'URL PDF', 15, -15, R('c_ruta'))
     calc(pr, R('c_ruta'), 'Ruta del PDF', '[Carpeta Reportes] & "\\" & FormatDate(Today(), "yyyy-MM-dd") & "\\Planificacion_" & [Institutos.Codigo] & ".pdf"', 'Ruta PDF', 15, 45, R('desc'))
     action(pr, R('desc'), 'Descargar PDF', 'Descargar Archivo', 15, 105,
-           [('text', 'Url', '[URL PDF]'), ('text', 'Token', '[Token]'), ('text', 'Ruta', '[Ruta PDF]')], [('flag', 'Exito', 'Descarga OK'), ('number', 'Bytes', 'Bytes')], R('loop_e'))
-    pr.add(f'<stage stageid="{R("loop_e")}" name="Por cada instituto" type="LoopEnd">{pr.sub()}<loginhibit />{disp(15, 165, 90, 30)}{nxt(R("end"))}<groupid>{g2}</groupid></stage>')
-    pr.add(f'<stage stageid="{R("end")}" name="End" type="End">{pr.sub()}<loginhibit />{disp(15, 225)}</stage>')
-    data_stage(pr, 'Institutos', 'collection', 180, -135, fields=[('IT', 'number'), ('Codigo', 'text'), ('Nombre', 'text')])
+           [('text', 'Url', '[URL PDF]'), ('text', 'Token', '[Token]'), ('text', 'Ruta', '[Ruta PDF]')], [('flag', 'Exito', 'Descarga OK'), ('number', 'Bytes', 'Bytes')], R('correo') if cola else R('loop_e'))
+    if cola:
+        action(pr, R('correo'), 'Preparar correo a jefatura', 'Preparar Correo', 15, 135,
+               [('text', 'Para', '[Institutos.Correo]'), ('text', 'Asunto', '"Planificación asistencial 2026 - IT " & [Institutos.Nombre] & " (" & FormatDate(Today(), "dd-MM-yyyy") & ")"'),
+                ('text', 'Cuerpo', '[Institutos.Resumen]'), ('text', 'Adjunto', '[Ruta PDF]'), ('text', 'Carpeta', '[Carpeta Reportes] & "\\" & FormatDate(Today(), "yyyy-MM-dd") & "\\Correos"')],
+               [('text', 'RutaEml', 'Ruta Correo')], R('loop_e'), 'Deja un borrador .eml con el PDF adjunto. No se envía solo: la jefatura de planificación lo revisa y lo envía desde Outlook.')
+    pr.add(f'<stage stageid="{R("loop_e")}" name="Por cada instituto" type="LoopEnd">{pr.sub()}<loginhibit />{disp(15, 195 if cola else 165, 90, 30)}{nxt(R("end"))}<groupid>{g2}</groupid></stage>')
+    pr.add(f'<stage stageid="{R("end")}" name="End" type="End">{pr.sub()}<loginhibit />{disp(15, 255 if cola else 225)}</stage>')
+    if cola:
+        data_stage(pr, 'Ruta Correo', 'text', 300, 25)
+    data_stage(pr, 'Institutos', 'collection', 180, -135, fields=[('IT', 'number'), ('Codigo', 'text'), ('Nombre', 'text')] + ([('Correo', 'text'), ('Resumen', 'text')] if cola else []))
     data_stage(pr, 'URL PDF', 'text', 180, -75)
     data_stage(pr, 'Ruta PDF', 'text', 180, -25)
     data_stage(pr, 'Descarga OK', 'flag', 300, -75, init='False')
     data_stage(pr, 'Bytes', 'number', 300, -25, init='0')
     note(pr, 'Nota', 'Distribución automática: deja en Carpeta Reportes\\<fecha> un PDF por instituto. Opcional: agrega aquí una acción "Send Message" del VBO de Outlook para enviarlo a cada jefatura.', -240, -195, 210, 100)
 
-    xml = [f'<process name={q(PROC)} version="1.0" bpversion="{BPVERSION}" narrative={q("Automatiza la incorporación de reportes BUK y SIC a la planificación asistencial y distribuye los reportes por instituto.")} byrefcollection="true">',
+    nota_v = ' Versión 2: usa la cola de trabajo "' + QUEUE + '" (un ítem por archivo, con reintentos y trazabilidad en Control Room) y deja borradores de correo para cada jefatura.' if cola else ''
+    xml = [f'<process name={q(PROC)} version="1.0" bpversion="{BPVERSION}" narrative={q("Automatiza la incorporación de reportes BUK y SIC a la planificación asistencial y distribuye los reportes por instituto." + nota_v)} byrefcollection="true">',
            view(), '<preconditions />', '<endpoint narrative="" />']
     for p in (pf, pr):
         xml.append(f'<subsheet subsheetid="{p.sid}" type="Normal" published="False"><name>{escape(p.name)}</name>{view()}</subsheet>')
+    if cola:
+        main.stages = [x for x in main.stages if not any(f'stageid="{I(k)}"' in x for k in ('loop_s', 'call_proc', 'loop_e'))]
     xml += main.stages + pf.stages + pr.stages
     xml.append('</process>')
     return '\n'.join(xml)
 
-def release(obj_xml, proc_xml):
+def build_cola(main, pf, pr):
+    """Main Page v2: encola cada archivo en la Work Queue y la consume ítem a ítem."""
+    I = main.id
+    action(main, I('encolar'), 'Agregar archivos a la cola', 'Add To Queue', 15, 105,
+           [('text', 'Queue Name', f'"{QUEUE}"'), ('collection', 'Data', '[Archivos]')],
+           [('collection', 'Item IDs', 'Items Agregados')], I('get'),
+           'Cada fila de Archivos (Nombre, Ruta, Tipo) se convierte en un ítem de la cola. Clave: Nombre.', obj=WQ)
+    action(main, I('get'), 'Tomar siguiente ítem', 'Get Next Item', 15, 165,
+           [('text', 'Queue Name', f'"{QUEUE}"')],
+           [('text', 'Item ID', 'Item ID'), ('collection', 'Data', 'Item Data')], I('d_item'), obj=WQ)
+    decision(main, I('d_item'), '¿Hay ítem?', 'Trim([Item ID]) <> ""', 15, 225, I('call_q'), I('call_rep'))
+    main.add(f'<stage stageid="{I("call_q")}" name="Procesar Archivo" type="SubSheet"><loginhibit onsuccess="true" />{disp(-135, 225, 90, 30)}'
+             + inputs_xml([('text', 'Ruta', '[Item Data.Ruta]'), ('text', 'Nombre', '[Item Data.Nombre]'), ('text', 'Tipo', '[Item Data.Tipo]')])
+             + outputs_xml([('flag', 'OK', 'Item OK'), ('text', 'Mensaje', 'Mensaje')])
+             + f'{nxt(I("d_ok"))}<processid>{pf.sid}</processid></stage>')
+    decision(main, I('d_ok'), '¿Ítem OK?', '[Item OK]', -135, 285, I('done'), I('exc'))
+    action(main, I('done'), 'Marcar completado', 'Mark Completed', -135, 345, [('text', 'Item ID', '[Item ID]')], [], I('get'), obj=WQ)
+    action(main, I('exc'), 'Marcar excepción', 'Mark Exception', -285, 345,
+           [('text', 'Item ID', '[Item ID]'), ('text', 'Exception Reason', '[Mensaje]')], [], I('get'), obj=WQ)
+    data_stage(main, 'Item ID', 'text', 570, -5)
+    data_stage(main, 'Item OK', 'flag', 570, 45, init='False')
+    data_stage(main, 'Item Data', 'collection', 570, 105, fields=[('Nombre', 'text'), ('Ruta', 'text'), ('Tipo', 'text')])
+    data_stage(main, 'Items Agregados', 'collection', 570, 155)
+    note(main, 'Cola', 'COLA DE TRABAJO "' + QUEUE + '": crea la cola una vez en System > Workflow > Work Queues con campo clave "Nombre". Cada reporte queda como un ítem: si falla se marca como excepción con el motivo y se ve en Control Room.', -330, 105, 170, 130)
+
+def release(obj_xml, proc_xml, proc2_xml=None):
     now = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
     oid, pid = gid('id', OBJ), gid('id', PROC)
     body = lambda x: x.replace('<process ', '<process xmlns="http://www.blueprism.co.uk/product/process" ', 1)
     return f'''<?xml version="1.0" encoding="utf-8"?>
 <bpr:release xmlns:bpr="http://www.blueprism.co.uk/product/release">
 <bpr:name>Cada hora cuenta - Botathon 2026</bpr:name>
-<bpr:release-notes>Objeto Teleton - API Conector y proceso Teleton - Ingesta BUK SIC.</bpr:release-notes>
+<bpr:release-notes>Objeto Teleton - API Conector y procesos Teleton - Ingesta BUK SIC (v1 y v2 con cola de trabajo y borradores de correo).</bpr:release-notes>
 <bpr:created>{now}</bpr:created>
 <bpr:package-id>1</bpr:package-id>
 <bpr:package-name>Cada hora cuenta</bpr:package-name>
 <bpr:user-created-by>admin</bpr:user-created-by>
-<bpr:contents count="2">
+<bpr:contents count="{3 if proc2_xml else 2}">
 <object id="{oid}" name={q(OBJ)} xmlns="http://www.blueprism.co.uk/product/object">
 {body(obj_xml)}
 </object>
 <process id="{pid}" name={q(PROC)} xmlns="http://www.blueprism.co.uk/product/process">
 {body(proc_xml)}
 </process>
+{f'<process id="{gid("id", PROC2)}" name={q(PROC2)} xmlns="http://www.blueprism.co.uk/product/process">' + chr(10) + body(proc2_xml) + chr(10) + '</process>' if proc2_xml else ''}
 </bpr:contents>
 </bpr:release>
 '''
 
 if __name__ == '__main__':
-    o, p = build_object(), build_process()
+    o, p, p2 = build_object(), build_process(), build_process(PROC2, cola=True)
+    open(f'blueprism/{PROC2}.bpprocess', 'w', encoding='utf-8').write('<?xml version="1.0" encoding="utf-8"?>\n' + p2)
     open(f'blueprism/{OBJ}.bpobject', 'w', encoding='utf-8').write('<?xml version="1.0" encoding="utf-8"?>\n' + o)
     open(f'blueprism/{PROC}.bpprocess', 'w', encoding='utf-8').write('<?xml version="1.0" encoding="utf-8"?>\n' + p)
-    open('blueprism/Teleton - Cada hora cuenta.bprelease', 'w', encoding='utf-8').write(release(o, p))
+    open('blueprism/Teleton - Cada hora cuenta.bprelease', 'w', encoding='utf-8').write(release(o, p, p2))
     print('ok')

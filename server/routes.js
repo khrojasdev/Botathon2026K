@@ -14,6 +14,7 @@ import { makeVersion, compararResumen, restaurarVersion } from './versions.js';
 import { loadVersionSnapshot } from './store.js';
 import { pdfDashboard, pdfPlanificacion, pdfFicha } from './pdf.js';
 import { insightsCobertura, simularContratacion, insightsProyeccion } from './insights.js';
+import { responder } from './asistente.js';
 
 export const router = express.Router();
 const SECRET = process.env.JWT_SECRET || 'cada-hora-cuenta-dev-secret';
@@ -366,7 +367,14 @@ router.post('/bot/heartbeat', need('ingesta'), wrap(async (req, res) => {
 router.get('/bot/estado', need('ver'), (req, res) => res.json({ bot: state.bot, ingestas: state.ingestas.filter((i) => i.origen === 'Blue Prism').slice(0, 10) }));
 router.get('/bot/institutos', need('ver'), (req, res) => {
   const activos = new Set(state.filas.filter((f) => f.activo !== false).map((f) => f.it));
-  res.json(state.institutos.filter((i) => activos.has(i.it)).map((i) => ({ IT: i.it, Codigo: i.codigo, Nombre: i.nombre })));
+  const correos = state.params.correos_jefatura || {};
+  const n = (x) => Math.round(x || 0).toLocaleString('es-CL');
+  res.json(state.institutos.filter((i) => activos.has(i.it)).map((i) => {
+    const d = dashboard(parseFilters({ it: String(i.it) }, req.user)); const t = d.total;
+    const cumpl = t.cumplimiento == null ? 'aún sin atenciones realizadas cargadas' : `${Math.round(t.cumplimiento * 100)}% de la meta en los meses con datos`;
+    const Resumen = `Estimada jefatura del IT ${i.nombre}:\r\n\r\nAdjuntamos la planificación asistencial 2026 actualizada por el robot.\r\n\r\n- Profesionales: ${n(t.dotacion)} (${n(t.horasSem)} horas semanales)\r\n- Atenciones planificadas: ${n(t.planTot)}\r\n- Meta de gestión: ${n(t.mgTot)}\r\n- Cumplimiento: ${cumpl}\r\n- Profesionales con alerta de desviación: ${d.alertas.sicTotal}\r\n\r\nEl detalle está en la plataforma Cada hora cuenta.\r\n\r\nPlanificación Central`;
+    return { IT: i.it, Codigo: i.codigo, Nombre: i.nombre, Correo: correos[i.it] || `jefatura.${String(i.codigo).toLowerCase()}@teleton.example`, Resumen };
+  }));
 });
 router.get('/bot/resumen', need('ver'), (req, res) => {
   const d = dashboard(parseFilters({}, req.user));
@@ -504,6 +512,15 @@ router.put('/insights/pacientes', need('parametros'), wrap(async (req, res) => {
   await audit(req.user, 'editar_parametro', 'pacientes_proyectados', it, { antes, despues: n }, motivo);
   res.json({ ok: true });
 }));
+
+router.post('/asistente', (req, res, next) => {
+  try {
+    if (!can(req.user, 'ver') && !can(req.user, 'mi_plan')) return res.status(403).json({ error: 'Sin permiso' });
+    const pregunta = String(req.body?.pregunta || '').slice(0, 400);
+    if (req.user.rol === 'profesional') return res.json({ texto: 'Puedes ver tu planificación, metas y lo realizado en «Mi planificación». Usa el botón Escuchar para oírla en voz alta.', puntos: [], enlaces: [{ label: 'Mi planificación', to: '/mi-plan' }], sugerencias: [] });
+    res.json(responder(pregunta, req.user));
+  } catch (e) { next(e); }
+});
 
 // ---------------- validación vs Excel ----------------
 router.get('/validacion', need('ver_todo'), (req, res) => {

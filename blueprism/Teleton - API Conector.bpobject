@@ -15,9 +15,10 @@
 <subsheet subsheetid="3751451c-fcf9-5027-ad8e-c1fdf24958b1" type="Normal" published="True"><name>Latido</name><view><camerax>0</camerax><cameray>0</cameray><zoom version="2">1.25</zoom></view></subsheet>
 <subsheet subsheetid="1ae1d30d-fb52-53b8-b040-31dbe65344ff" type="Normal" published="True"><name>Obtener Institutos</name><view><camerax>0</camerax><cameray>0</cameray><zoom version="2">1.25</zoom></view></subsheet>
 <subsheet subsheetid="aaf9f03f-f892-57b9-bd89-d5c1f45e6532" type="Normal" published="True"><name>Descargar Archivo</name><view><camerax>0</camerax><cameray>0</cameray><zoom version="2">1.25</zoom></view></subsheet>
+<subsheet subsheetid="1fdbda89-f639-5211-9115-2f08d189a368" type="Normal" published="True"><name>Preparar Correo</name><view><camerax>0</camerax><cameray>0</cameray><zoom version="2">1.25</zoom></view></subsheet>
 <stage stageid="c57c4b10-4b41-5991-b34c-d6e43cdd1af6" name="Start" type="Start"><loginhibit /><display x="15" y="-105" w="60" h="30" /><onsuccess>3dcb1bc7-db78-5421-b0f5-a01d2daf052c</onsuccess></stage>
 <stage stageid="3dcb1bc7-db78-5421-b0f5-a01d2daf052c" name="End" type="End"><loginhibit /><display x="15" y="90" w="60" h="30" /></stage>
-<stage stageid="bdf2f0d6-54a3-5645-a0a5-62aea09c91ca" name="Business Object Properties" type="ProcessInfo"><narrative>Conector entre Blue Prism y la plataforma "Cada hora cuenta": lee reportes Excel de BUK y SIC sin Office, los valida, envía lo válido a la API, informa errores y descarga reportes por instituto.</narrative><display x="-195" y="-105" w="150" h="90" /><references><reference>System.dll</reference><reference>System.Data.dll</reference><reference>System.Xml.dll</reference><reference>System.Drawing.dll</reference><reference>System.IO.Compression.dll</reference><reference>System.Core.dll</reference></references><imports><import>System</import><import>System.Drawing</import><import>System.Data</import><import>System.Linq</import></imports><language>csharp</language><globalcode><![CDATA[
+<stage stageid="bdf2f0d6-54a3-5645-a0a5-62aea09c91ca" name="Business Object Properties" type="ProcessInfo"><narrative>Conector entre Blue Prism y la plataforma "Cada hora cuenta": lee reportes Excel de BUK y SIC sin Office, los valida, envía lo válido a la API, informa errores y descarga reportes por instituto.</narrative><display x="-195" y="-105" w="150" h="90" /><references><reference>System.dll</reference><reference>System.Data.dll</reference><reference>System.Xml.dll</reference><reference>System.Drawing.dll</reference><reference>System.IO.Compression.dll</reference><reference>System.Core.dll</reference></references><imports><import>System</import><import>System.Drawing</import><import>System.Data</import><import>System.Linq</import></imports><language>csharp</language><globalcode><![CDATA[]]></globalcode><code><![CDATA[
 // ===== Utilidades compartidas (Cada hora cuenta · Botathon 2026) =====
 static string JsonEsc(string s)
 {
@@ -272,7 +273,7 @@ static System.Data.DataTable LeerXlsx(string ruta, out string hoja)
     }
     return tabla;
 }
-]]></globalcode><code-options /></stage>
+]]></code></stage>
 <stage stageid="e0a280e3-d923-5ddd-8e1f-dd52cbb36404" name="Nota" type="Note"><narrative>Cada hora cuenta · Botathon Teletón 2026. Objeto sin dependencias de Microsoft Office: lee .xlsx con System.IO.Compression.</narrative><display x="-195" y="30" w="150" h="60" /></stage>
 <stage stageid="1ca9dcd1-e6f7-5392-ab0a-f93943bb6c9e" name="Start" type="Start"><subsheetid>c7dfaf31-35f1-5e39-864c-0efc579770e2</subsheetid><loginhibit /><display x="15" y="-105" w="60" h="30" /><onsuccess>3418b259-cc99-5499-80ef-9bdd38238bfb</onsuccess></stage>
 <stage stageid="3418b259-cc99-5499-80ef-9bdd38238bfb" name="End" type="End"><subsheetid>c7dfaf31-35f1-5e39-864c-0efc579770e2</subsheetid><loginhibit /><display x="15" y="90" w="60" h="30" /></stage>
@@ -504,18 +505,20 @@ Institutos = new DataTable("Institutos");
 Institutos.Columns.Add("IT", typeof(decimal));
 Institutos.Columns.Add("Codigo", typeof(string));
 Institutos.Columns.Add("Nombre", typeof(string));
+Institutos.Columns.Add("Correo", typeof(string));
+Institutos.Columns.Add("Resumen", typeof(string));
 foreach (System.Text.RegularExpressions.Match m in System.Text.RegularExpressions.Regex.Matches(resp, "\\{[^{}]*\\}"))
 {
     string o = m.Value;
     decimal it;
     if (decimal.TryParse(JsonCampo(o, "IT"), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out it))
-        Institutos.Rows.Add(it, JsonCampo(o, "Codigo"), JsonCampo(o, "Nombre"));
+        Institutos.Rows.Add(it, JsonCampo(o, "Codigo"), JsonCampo(o, "Nombre"), JsonCampo(o, "Correo"), JsonCampo(o, "Resumen"));
 }
 ]]></code></stage>
-<stage stageid="929931a7-370b-5162-a618-18f106504efa" name="End" type="End"><subsheetid>1ae1d30d-fb52-53b8-b040-31dbe65344ff</subsheetid><loginhibit /><display x="15" y="90" w="60" h="30" /><outputs><output type="collection" name="Institutos" narrative="IT, Codigo, Nombre" stage="Institutos" /></outputs></stage>
+<stage stageid="929931a7-370b-5162-a618-18f106504efa" name="End" type="End"><subsheetid>1ae1d30d-fb52-53b8-b040-31dbe65344ff</subsheetid><loginhibit /><display x="15" y="90" w="60" h="30" /><outputs><output type="collection" name="Institutos" narrative="IT, Codigo, Nombre, Correo, Resumen" stage="Institutos" /></outputs></stage>
 <stage stageid="24f1ab8e-5ca8-5326-a0d2-f69b12939be6" name="UrlBase" type="Data"><subsheetid>1ae1d30d-fb52-53b8-b040-31dbe65344ff</subsheetid><narrative></narrative><display x="180" y="-105" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
 <stage stageid="7a9af377-9d8f-5e69-97a9-b8d24065511b" name="Token" type="Data"><subsheetid>1ae1d30d-fb52-53b8-b040-31dbe65344ff</subsheetid><narrative></narrative><display x="180" y="-65" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
-<stage stageid="44a62a86-8342-5a81-8c22-18e924aba41d" name="Institutos" type="Collection"><subsheetid>1ae1d30d-fb52-53b8-b040-31dbe65344ff</subsheetid><narrative>IT, Codigo, Nombre</narrative><display x="300" y="-105" w="90" h="30" /><datatype>collection</datatype><private /><alwaysinit /><collectioninfo><field name="IT" type="number" /><field name="Codigo" type="text" /><field name="Nombre" type="text" /></collectioninfo></stage>
+<stage stageid="44a62a86-8342-5a81-8c22-18e924aba41d" name="Institutos" type="Collection"><subsheetid>1ae1d30d-fb52-53b8-b040-31dbe65344ff</subsheetid><narrative>IT, Codigo, Nombre, Correo, Resumen</narrative><display x="300" y="-105" w="90" h="30" /><datatype>collection</datatype><private /><alwaysinit /><collectioninfo><field name="IT" type="number" /><field name="Codigo" type="text" /><field name="Nombre" type="text" /><field name="Correo" type="text" /><field name="Resumen" type="text" /></collectioninfo></stage>
 <stage stageid="c43e915a-f478-5874-ac43-d093a8a51b96" name="Descripcion" type="Note"><subsheetid>1ae1d30d-fb52-53b8-b040-31dbe65344ff</subsheetid><narrative>Lista los institutos con planificación activa (para distribuir reportes).</narrative><display x="-180" y="-105" w="180" h="60" /></stage>
 <stage stageid="30bec8de-ae95-5f02-8c61-2d7f84412cc4" name="Start" type="Start"><subsheetid>aaf9f03f-f892-57b9-bd89-d5c1f45e6532</subsheetid><loginhibit /><display x="15" y="-105" w="60" h="30" /><inputs><input type="text" name="Url" narrative="URL completa" stage="Url" /><input type="text" name="Token" narrative="" stage="Token" /><input type="text" name="Ruta" narrative="Dónde guardarlo" stage="Ruta" /></inputs><onsuccess>36f77293-b2fa-5cba-90d8-8ebb8d4516b5</onsuccess></stage>
 <stage stageid="36f77293-b2fa-5cba-90d8-8ebb8d4516b5" name="Descargar Archivo" type="Code"><subsheetid>aaf9f03f-f892-57b9-bd89-d5c1f45e6532</subsheetid><narrative>Descarga un archivo autenticado (ej. PDF de un instituto) y lo guarda en disco.</narrative><loginhibit /><display x="15" y="-15" w="90" h="45" /><inputs><input type="text" name="Url" expr="[Url]" /><input type="text" name="Token" expr="[Token]" /><input type="text" name="Ruta" expr="[Ruta]" /></inputs><outputs><output type="flag" name="Exito" stage="Exito" /><output type="number" name="Bytes" stage="Bytes" /></outputs><onsuccess>c14db802-e805-5003-96c8-60b83ea20c4f</onsuccess><code><![CDATA[
@@ -538,4 +541,39 @@ Exito = fi.Length > 0;
 <stage stageid="1a83bfbe-64fc-52ce-b5d3-1b13796e6ad1" name="Exito" type="Data"><subsheetid>aaf9f03f-f892-57b9-bd89-d5c1f45e6532</subsheetid><narrative></narrative><display x="300" y="-105" w="90" h="30" /><datatype>flag</datatype><initialvalue /><private /><alwaysinit /></stage>
 <stage stageid="f655e353-06ae-5a4a-b399-bea145457d80" name="Bytes" type="Data"><subsheetid>aaf9f03f-f892-57b9-bd89-d5c1f45e6532</subsheetid><narrative></narrative><display x="300" y="-65" w="90" h="30" /><datatype>number</datatype><initialvalue /><private /><alwaysinit /></stage>
 <stage stageid="70b0792e-263a-53f1-8670-9a334ef2d8d9" name="Descripcion" type="Note"><subsheetid>aaf9f03f-f892-57b9-bd89-d5c1f45e6532</subsheetid><narrative>Descarga un archivo autenticado (ej. PDF de un instituto) y lo guarda en disco.</narrative><display x="-180" y="-105" w="180" h="60" /></stage>
+<stage stageid="e5dd0a77-8bcd-5ebf-9f85-2cc1d8e6c7ed" name="Start" type="Start"><subsheetid>1fdbda89-f639-5211-9115-2f08d189a368</subsheetid><loginhibit /><display x="15" y="-105" w="60" h="30" /><inputs><input type="text" name="Para" narrative="Correo de la jefatura" stage="Para" /><input type="text" name="Asunto" narrative="" stage="Asunto" /><input type="text" name="Cuerpo" narrative="Texto del correo" stage="Cuerpo" /><input type="text" name="Adjunto" narrative="Ruta del PDF (opcional)" stage="Adjunto" /><input type="text" name="Carpeta" narrative="Dónde dejar el borrador" stage="Carpeta" /></inputs><onsuccess>a3c8ab24-cefd-5a89-8f8c-d2cda57f04fd</onsuccess></stage>
+<stage stageid="a3c8ab24-cefd-5a89-8f8c-d2cda57f04fd" name="Preparar Correo" type="Code"><subsheetid>1fdbda89-f639-5211-9115-2f08d189a368</subsheetid><narrative>Deja un borrador de correo (.eml) con el PDF adjunto para la jefatura. No envía nada: el borrador se abre con doble clic en Outlook y se revisa antes de enviar.</narrative><loginhibit /><display x="15" y="-15" w="90" h="45" /><inputs><input type="text" name="Para" expr="[Para]" /><input type="text" name="Asunto" expr="[Asunto]" /><input type="text" name="Cuerpo" expr="[Cuerpo]" /><input type="text" name="Adjunto" expr="[Adjunto]" /><input type="text" name="Carpeta" expr="[Carpeta]" /></inputs><outputs><output type="text" name="RutaEml" stage="RutaEml" /></outputs><onsuccess>1490fec8-810e-5c57-ac86-30546b722ab1</onsuccess><code><![CDATA[
+if (!System.IO.Directory.Exists(Carpeta)) System.IO.Directory.CreateDirectory(Carpeta);
+var enc = System.Text.Encoding.UTF8;
+string limite = "----=_ChC_" + System.Guid.NewGuid().ToString("N");
+var sb = new System.Text.StringBuilder();
+sb.Append("X-Unsent: 1\r\n");
+sb.Append("To: " + Para + "\r\n");
+sb.Append("Subject: =?utf-8?B?" + System.Convert.ToBase64String(enc.GetBytes(Asunto ?? "")) + "?=\r\n");
+sb.Append("MIME-Version: 1.0\r\n");
+sb.Append("Content-Type: multipart/mixed; boundary=\"" + limite + "\"\r\n\r\n");
+sb.Append("--" + limite + "\r\n");
+sb.Append("Content-Type: text/plain; charset=utf-8\r\nContent-Transfer-Encoding: base64\r\n\r\n");
+sb.Append(System.Convert.ToBase64String(enc.GetBytes(Cuerpo ?? ""), System.Base64FormattingOptions.InsertLineBreaks) + "\r\n");
+if (!string.IsNullOrEmpty(Adjunto) && System.IO.File.Exists(Adjunto))
+{
+    string nombre = System.IO.Path.GetFileName(Adjunto);
+    sb.Append("--" + limite + "\r\n");
+    sb.Append("Content-Type: application/pdf; name=\"" + nombre + "\"\r\nContent-Transfer-Encoding: base64\r\n");
+    sb.Append("Content-Disposition: attachment; filename=\"" + nombre + "\"\r\n\r\n");
+    sb.Append(System.Convert.ToBase64String(System.IO.File.ReadAllBytes(Adjunto), System.Base64FormattingOptions.InsertLineBreaks) + "\r\n");
+}
+sb.Append("--" + limite + "--\r\n");
+string baseNombre = string.IsNullOrEmpty(Adjunto) ? "Correo" : System.IO.Path.GetFileNameWithoutExtension(Adjunto);
+RutaEml = System.IO.Path.Combine(Carpeta, baseNombre + ".eml");
+System.IO.File.WriteAllText(RutaEml, sb.ToString(), new System.Text.UTF8Encoding(false));
+]]></code></stage>
+<stage stageid="1490fec8-810e-5c57-ac86-30546b722ab1" name="End" type="End"><subsheetid>1fdbda89-f639-5211-9115-2f08d189a368</subsheetid><loginhibit /><display x="15" y="90" w="60" h="30" /><outputs><output type="text" name="RutaEml" narrative="Ruta del borrador creado" stage="RutaEml" /></outputs></stage>
+<stage stageid="a1e21f9d-9490-5dac-acd9-573867f6566c" name="Para" type="Data"><subsheetid>1fdbda89-f639-5211-9115-2f08d189a368</subsheetid><narrative>Correo de la jefatura</narrative><display x="180" y="-105" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="9fc6e37a-070b-5186-a7ad-ed5f8960a37b" name="Asunto" type="Data"><subsheetid>1fdbda89-f639-5211-9115-2f08d189a368</subsheetid><narrative></narrative><display x="180" y="-65" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="c32da1c9-4fbb-5de8-bb20-b2af71c7b401" name="Cuerpo" type="Data"><subsheetid>1fdbda89-f639-5211-9115-2f08d189a368</subsheetid><narrative>Texto del correo</narrative><display x="180" y="-25" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="a75ad4e2-1bd9-5ea9-9fa8-9a7592e8164e" name="Adjunto" type="Data"><subsheetid>1fdbda89-f639-5211-9115-2f08d189a368</subsheetid><narrative>Ruta del PDF (opcional)</narrative><display x="180" y="15" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="9aec890e-12c1-568a-b42f-27f6c29ed63e" name="Carpeta" type="Data"><subsheetid>1fdbda89-f639-5211-9115-2f08d189a368</subsheetid><narrative>Dónde dejar el borrador</narrative><display x="180" y="55" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="79d35479-c9f2-53a8-9df7-f0cb99b70da3" name="RutaEml" type="Data"><subsheetid>1fdbda89-f639-5211-9115-2f08d189a368</subsheetid><narrative>Ruta del borrador creado</narrative><display x="300" y="-105" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="b18392e0-aa07-526b-bc07-9f86bbf74370" name="Descripcion" type="Note"><subsheetid>1fdbda89-f639-5211-9115-2f08d189a368</subsheetid><narrative>Deja un borrador de correo (.eml) con el PDF adjunto para la jefatura. No envía nada: el borrador se abre con doble clic en Outlook y se revisa antes de enviar.</narrative><display x="-180" y="-105" w="180" h="60" /></stage>
 </process>

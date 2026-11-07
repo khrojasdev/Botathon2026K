@@ -1,0 +1,643 @@
+<?xml version="1.0" encoding="utf-8"?>
+<bpr:release xmlns:bpr="http://www.blueprism.co.uk/product/release">
+<bpr:name>Cada hora cuenta - Botathon 2026</bpr:name>
+<bpr:release-notes>Objeto Teleton - API Conector y proceso Teleton - Ingesta BUK SIC.</bpr:release-notes>
+<bpr:created>2026-11-07T01:18:02</bpr:created>
+<bpr:package-id>1</bpr:package-id>
+<bpr:package-name>Cada hora cuenta</bpr:package-name>
+<bpr:user-created-by>admin</bpr:user-created-by>
+<bpr:contents count="2">
+<object id="a881d8da-9f7d-54e2-9d43-651905a130ba" name="Teleton - API Conector" xmlns="http://www.blueprism.co.uk/product/object">
+<process xmlns="http://www.blueprism.co.uk/product/process" name="Teleton - API Conector" version="1.0" bpversion="6.10.1.12345" narrative="Conector de la plataforma Cada hora cuenta (planificación asistencial Teletón)." type="object" runmode="Exclusive">
+<view><camerax>0</camerax><cameray>0</cameray><zoom version="2">1.25</zoom></view>
+<preconditions />
+<endpoint narrative="" />
+<subsheet subsheetid="c7dfaf31-35f1-5e39-864c-0efc579770e2" type="CleanUp" published="True"><name>Clean Up</name><view><camerax>0</camerax><cameray>0</cameray><zoom version="2">1.25</zoom></view></subsheet>
+<subsheet subsheetid="0d9b0ef8-6aaa-57d4-b4ef-7a2fc3d8c236" type="Normal" published="True"><name>Login</name><view><camerax>0</camerax><cameray>0</cameray><zoom version="2">1.25</zoom></view></subsheet>
+<subsheet subsheetid="592ad4cc-4c14-5677-9469-8cb7ecc0a092" type="Normal" published="True"><name>Listar Archivos</name><view><camerax>0</camerax><cameray>0</cameray><zoom version="2">1.25</zoom></view></subsheet>
+<subsheet subsheetid="a61b4277-8193-5fcf-8f0a-eec7ec3207a4" type="Normal" published="True"><name>Leer Excel</name><view><camerax>0</camerax><cameray>0</cameray><zoom version="2">1.25</zoom></view></subsheet>
+<subsheet subsheetid="d23dbb02-71a8-5446-be9f-9580cdb75f20" type="Normal" published="True"><name>Validar Reporte BUK</name><view><camerax>0</camerax><cameray>0</cameray><zoom version="2">1.25</zoom></view></subsheet>
+<subsheet subsheetid="f8ae5e6d-ce32-594f-b181-1079d3e4e49c" type="Normal" published="True"><name>Validar Reporte SIC</name><view><camerax>0</camerax><cameray>0</cameray><zoom version="2">1.25</zoom></view></subsheet>
+<subsheet subsheetid="bddf1172-3313-518b-bc26-b77966abdae4" type="Normal" published="True"><name>Enviar Ingesta</name><view><camerax>0</camerax><cameray>0</cameray><zoom version="2">1.25</zoom></view></subsheet>
+<subsheet subsheetid="2ce8fdf8-30d7-5f98-85f7-1c55d45e6fca" type="Normal" published="True"><name>Guardar Errores CSV</name><view><camerax>0</camerax><cameray>0</cameray><zoom version="2">1.25</zoom></view></subsheet>
+<subsheet subsheetid="11bc42d8-2633-5c3e-92e5-001c84c655c8" type="Normal" published="True"><name>Mover Archivo</name><view><camerax>0</camerax><cameray>0</cameray><zoom version="2">1.25</zoom></view></subsheet>
+<subsheet subsheetid="3751451c-fcf9-5027-ad8e-c1fdf24958b1" type="Normal" published="True"><name>Latido</name><view><camerax>0</camerax><cameray>0</cameray><zoom version="2">1.25</zoom></view></subsheet>
+<subsheet subsheetid="1ae1d30d-fb52-53b8-b040-31dbe65344ff" type="Normal" published="True"><name>Obtener Institutos</name><view><camerax>0</camerax><cameray>0</cameray><zoom version="2">1.25</zoom></view></subsheet>
+<subsheet subsheetid="aaf9f03f-f892-57b9-bd89-d5c1f45e6532" type="Normal" published="True"><name>Descargar Archivo</name><view><camerax>0</camerax><cameray>0</cameray><zoom version="2">1.25</zoom></view></subsheet>
+<stage stageid="c57c4b10-4b41-5991-b34c-d6e43cdd1af6" name="Start" type="Start"><loginhibit /><display x="15" y="-105" w="60" h="30" /><onsuccess>3dcb1bc7-db78-5421-b0f5-a01d2daf052c</onsuccess></stage>
+<stage stageid="3dcb1bc7-db78-5421-b0f5-a01d2daf052c" name="End" type="End"><loginhibit /><display x="15" y="90" w="60" h="30" /></stage>
+<stage stageid="bdf2f0d6-54a3-5645-a0a5-62aea09c91ca" name="Business Object Properties" type="ProcessInfo"><narrative>Conector entre Blue Prism y la plataforma "Cada hora cuenta": lee reportes Excel de BUK y SIC sin Office, los valida, envía lo válido a la API, informa errores y descarga reportes por instituto.</narrative><display x="-195" y="-105" w="150" h="90" /><references><reference>System.dll</reference><reference>System.Data.dll</reference><reference>System.Xml.dll</reference><reference>System.Drawing.dll</reference><reference>System.IO.Compression.dll</reference><reference>System.Core.dll</reference></references><imports><import>System</import><import>System.Drawing</import><import>System.Data</import><import>System.Linq</import></imports><language>csharp</language><globalcode><![CDATA[
+// ===== Utilidades compartidas (Cada hora cuenta · Botathon 2026) =====
+static string JsonEsc(string s)
+{
+    if (s == null) return "";
+    var sb = new System.Text.StringBuilder();
+    foreach (char c in s)
+    {
+        switch (c)
+        {
+            case '"': sb.Append("\\\""); break;
+            case '\\': sb.Append("\\\\"); break;
+            case '\n': sb.Append("\\n"); break;
+            case '\r': sb.Append("\\r"); break;
+            case '\t': sb.Append("\\t"); break;
+            default:
+                if (c < 32) sb.Append("\\u" + ((int)c).ToString("x4")); else sb.Append(c);
+                break;
+        }
+    }
+    return sb.ToString();
+}
+
+static string TablaAJson(System.Data.DataTable t)
+{
+    var sb = new System.Text.StringBuilder("[");
+    if (t != null)
+    {
+        for (int i = 0; i < t.Rows.Count; i++)
+        {
+            if (i > 0) sb.Append(",");
+            sb.Append("{");
+            for (int j = 0; j < t.Columns.Count; j++)
+            {
+                if (j > 0) sb.Append(",");
+                object v = t.Rows[i][j];
+                string s = (v == null || v == System.DBNull.Value) ? "" : System.Convert.ToString(v, System.Globalization.CultureInfo.InvariantCulture);
+                sb.Append("\"").Append(JsonEsc(t.Columns[j].ColumnName)).Append("\":\"").Append(JsonEsc(s)).Append("\"");
+            }
+            sb.Append("}");
+        }
+    }
+    return sb.Append("]").ToString();
+}
+
+static string Http(string metodo, string url, string token, string cuerpo, out int status)
+{
+    System.Net.ServicePointManager.SecurityProtocol = (System.Net.SecurityProtocolType)3072; // TLS 1.2
+    var req = (System.Net.HttpWebRequest)System.Net.WebRequest.Create(url);
+    req.Method = metodo;
+    req.Timeout = 180000;
+    req.Accept = "application/json";
+    req.UserAgent = "BluePrism-CadaHoraCuenta/1.0";
+    if (!string.IsNullOrEmpty(token)) req.Headers["Authorization"] = "Bearer " + token;
+    if (cuerpo != null)
+    {
+        byte[] data = System.Text.Encoding.UTF8.GetBytes(cuerpo);
+        req.ContentType = "application/json; charset=utf-8";
+        req.ContentLength = data.Length;
+        using (var s = req.GetRequestStream()) s.Write(data, 0, data.Length);
+    }
+    try
+    {
+        using (var resp = (System.Net.HttpWebResponse)req.GetResponse())
+        using (var r = new System.IO.StreamReader(resp.GetResponseStream(), System.Text.Encoding.UTF8))
+        { status = (int)resp.StatusCode; return r.ReadToEnd(); }
+    }
+    catch (System.Net.WebException ex)
+    {
+        if (ex.Response == null) { status = 0; return "{\"error\":\"" + JsonEsc(ex.Message) + "\"}"; }
+        var resp = (System.Net.HttpWebResponse)ex.Response;
+        status = (int)resp.StatusCode;
+        using (var r = new System.IO.StreamReader(resp.GetResponseStream(), System.Text.Encoding.UTF8)) return r.ReadToEnd();
+    }
+}
+
+static string JsonCampo(string json, string campo)
+{
+    var m = System.Text.RegularExpressions.Regex.Match(json ?? "", "\"" + campo + "\"\\s*:\\s*(\"((?:\\\\.|[^\"\\\\])*)\"|(-?[0-9.]+)|true|false|null)");
+    if (!m.Success) return "";
+    if (m.Groups[2].Success && m.Groups[1].Value.StartsWith("\"")) return System.Text.RegularExpressions.Regex.Unescape(m.Groups[2].Value);
+    if (m.Groups[3].Success) return m.Groups[3].Value;
+    return m.Groups[1].Value;
+}
+
+static string UrlUnir(string baseUrl, string ruta) { return (baseUrl ?? "").TrimEnd('/') + ruta; }
+
+static decimal Num(string s)
+{
+    decimal d;
+    if (string.IsNullOrWhiteSpace(s)) return -1;
+    if (decimal.TryParse(s.Trim().Replace(",", "."), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out d)) return d;
+    return -1;
+}
+
+static System.DateTime? Fecha(string s)
+{
+    if (string.IsNullOrWhiteSpace(s)) return null;
+    s = s.Trim();
+    System.DateTime d;
+    string[] f = { "yyyy-MM-dd", "yyyy-MM-ddTHH:mm:ss", "dd-MM-yyyy", "dd/MM/yyyy", "d-M-yyyy", "d/M/yyyy", "yyyy/MM/dd", "dd-MM-yyyy HH:mm:ss", "dd/MM/yyyy HH:mm:ss" };
+    if (System.DateTime.TryParseExact(s, f, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out d)) return d;
+    double oa;
+    if (double.TryParse(s, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out oa) && oa > 30000 && oa < 80000) return System.DateTime.FromOADate(oa);
+    if (System.DateTime.TryParse(s, new System.Globalization.CultureInfo("es-CL"), System.Globalization.DateTimeStyles.None, out d)) return d;
+    return null;
+}
+
+static string Col(System.Data.DataRow r, params string[] nombres)
+{
+    foreach (var n in nombres)
+        foreach (System.Data.DataColumn c in r.Table.Columns)
+            if (Norm(c.ColumnName) == Norm(n))
+            {
+                object v = r[c];
+                return (v == null || v == System.DBNull.Value) ? "" : System.Convert.ToString(v, System.Globalization.CultureInfo.InvariantCulture).Trim();
+            }
+    return "";
+}
+
+static string Norm(string s)
+{
+    var sb = new System.Text.StringBuilder();
+    foreach (char ch in (s ?? "").Normalize(System.Text.NormalizationForm.FormD).ToLowerInvariant())
+        if (System.Globalization.CharUnicodeInfo.GetUnicodeCategory(ch) != System.Globalization.UnicodeCategory.NonSpacingMark && char.IsLetterOrDigit(ch)) sb.Append(ch);
+    return sb.ToString();
+}
+
+static System.Data.DataTable NuevaTablaErrores()
+{
+    var t = new System.Data.DataTable("Errores");
+    t.Columns.Add("Fila", typeof(decimal));
+    t.Columns.Add("Campo", typeof(string));
+    t.Columns.Add("Valor", typeof(string));
+    t.Columns.Add("Mensaje", typeof(string));
+    t.Columns.Add("Severidad", typeof(string));
+    t.Columns.Add("PersonaId", typeof(string));
+    return t;
+}
+
+// ---- Lector .xlsx sin Microsoft Office (OpenXML con System.IO.Compression) ----
+static int ColIndex(string celda)
+{
+    int n = 0;
+    foreach (char c in celda) { if (char.IsLetter(c)) n = n * 26 + (char.ToUpperInvariant(c) - 'A' + 1); else break; }
+    return n - 1;
+}
+
+static System.Xml.XmlDocument LeerXml(System.IO.Compression.ZipArchive zip, string ruta)
+{
+    var e = zip.GetEntry(ruta);
+    if (e == null) return null;
+    var doc = new System.Xml.XmlDocument();
+    using (var s = e.Open()) doc.Load(s);
+    return doc;
+}
+
+static System.Data.DataTable LeerXlsx(string ruta, out string hoja)
+{
+    hoja = "";
+    var tabla = new System.Data.DataTable("Datos");
+    using (var fs = new System.IO.FileStream(ruta, System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.ReadWrite))
+    using (var zip = new System.IO.Compression.ZipArchive(fs, System.IO.Compression.ZipArchiveMode.Read))
+    {
+        const string NS = "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
+        var ns = new System.Xml.XmlNamespaceManager(new System.Xml.NameTable());
+        ns.AddNamespace("x", NS);
+        ns.AddNamespace("r", "http://schemas.openxmlformats.org/officeDocument/2006/relationships");
+        ns.AddNamespace("p", "http://schemas.openxmlformats.org/package/2006/relationships");
+        // textos compartidos
+        var compartidos = new System.Collections.Generic.List<string>();
+        var ss = LeerXml(zip, "xl/sharedStrings.xml");
+        if (ss != null)
+        {
+            ns.AddNamespace("s", ss.DocumentElement.NamespaceURI);
+            foreach (System.Xml.XmlNode si in ss.SelectNodes("//s:si", ns))
+            {
+                var sb = new System.Text.StringBuilder();
+                foreach (System.Xml.XmlNode tn in si.SelectNodes(".//s:t", ns)) sb.Append(tn.InnerText);
+                compartidos.Add(sb.ToString());
+            }
+        }
+        // primera hoja del libro
+        var wb = LeerXml(zip, "xl/workbook.xml");
+        var sheet = wb.SelectSingleNode("//x:sheets/x:sheet", ns);
+        hoja = sheet.Attributes["name"].Value;
+        string rid = sheet.Attributes["id", "http://schemas.openxmlformats.org/officeDocument/2006/relationships"].Value;
+        var rels = LeerXml(zip, "xl/_rels/workbook.xml.rels");
+        string destino = "worksheets/sheet1.xml";
+        foreach (System.Xml.XmlNode rel in rels.SelectNodes("//p:Relationship", ns))
+            if (rel.Attributes["Id"].Value == rid) destino = rel.Attributes["Target"].Value;
+        destino = destino.StartsWith("/") ? destino.TrimStart('/') : "xl/" + destino;
+        var ws = LeerXml(zip, destino);
+        var filas = new System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<int, string[]>>();
+        int maxCol = 0;
+        foreach (System.Xml.XmlNode row in ws.SelectNodes("//x:sheetData/x:row", ns))
+        {
+            int rnum = int.Parse(row.Attributes["r"].Value);
+            var celdas = new System.Collections.Generic.Dictionary<int, string>();
+            foreach (System.Xml.XmlNode c in row.SelectNodes("x:c", ns))
+            {
+                int ci = ColIndex(c.Attributes["r"].Value);
+                string t = c.Attributes["t"] != null ? c.Attributes["t"].Value : "";
+                string val = "";
+                var v = c.SelectSingleNode("x:v", ns);
+                if (t == "s" && v != null) val = compartidos[int.Parse(v.InnerText)];
+                else if (t == "inlineStr") { var isn = c.SelectSingleNode(".//x:t", ns); val = isn != null ? isn.InnerText : ""; }
+                else if (v != null) val = v.InnerText;
+                celdas[ci] = val;
+                if (ci + 1 > maxCol) maxCol = ci + 1;
+            }
+            var arr = new string[System.Math.Max(maxCol, 1)];
+            foreach (var kv in celdas) { if (kv.Key >= arr.Length) System.Array.Resize(ref arr, kv.Key + 1); arr[kv.Key] = kv.Value; }
+            filas.Add(new System.Collections.Generic.KeyValuePair<int, string[]>(rnum, arr));
+        }
+        // encabezado: primera fila que contiene "PersonaId"
+        int h = filas.FindIndex(f => System.Array.Exists(f.Value, x => Norm(x) == "personaid"));
+        if (h < 0) h = 0;
+        if (filas.Count == 0) return tabla;
+        string[] enc = filas[h].Value;
+        var usadas = new System.Collections.Generic.List<int>();
+        tabla.Columns.Add("Fila", typeof(decimal));
+        for (int j = 0; j < enc.Length; j++)
+        {
+            string nom = (enc[j] ?? "").Trim();
+            if (nom.Length == 0 || tabla.Columns.Contains(nom)) continue;
+            tabla.Columns.Add(nom, typeof(string));
+            usadas.Add(j);
+        }
+        for (int i = h + 1; i < filas.Count; i++)
+        {
+            string[] f = filas[i].Value;
+            bool vacia = true;
+            var dr = tabla.NewRow();
+            dr["Fila"] = (decimal)filas[i].Key;
+            foreach (int j in usadas)
+            {
+                string val = j < f.Length ? (f[j] ?? "") : "";
+                string nom = enc[j].Trim();
+                string nn = Norm(nom);
+                // fechas: Excel las guarda como número de serie
+                if ((nn.Contains("fecha") || nn == "periodo") && val.Length > 0)
+                {
+                    double oa;
+                    if (double.TryParse(val, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out oa) && oa > 1000 && oa < 100000)
+                        val = System.DateTime.FromOADate(oa).ToString("yyyy-MM-dd");
+                }
+                if (val.Length > 0) vacia = false;
+                dr[nom] = val;
+            }
+            if (!vacia) tabla.Rows.Add(dr);
+        }
+    }
+    return tabla;
+}
+]]></globalcode><code-options /></stage>
+<stage stageid="e0a280e3-d923-5ddd-8e1f-dd52cbb36404" name="Nota" type="Note"><narrative>Cada hora cuenta · Botathon Teletón 2026. Objeto sin dependencias de Microsoft Office: lee .xlsx con System.IO.Compression.</narrative><display x="-195" y="30" w="150" h="60" /></stage>
+<stage stageid="1ca9dcd1-e6f7-5392-ab0a-f93943bb6c9e" name="Start" type="Start"><subsheetid>c7dfaf31-35f1-5e39-864c-0efc579770e2</subsheetid><loginhibit /><display x="15" y="-105" w="60" h="30" /><onsuccess>3418b259-cc99-5499-80ef-9bdd38238bfb</onsuccess></stage>
+<stage stageid="3418b259-cc99-5499-80ef-9bdd38238bfb" name="End" type="End"><subsheetid>c7dfaf31-35f1-5e39-864c-0efc579770e2</subsheetid><loginhibit /><display x="15" y="90" w="60" h="30" /></stage>
+<stage stageid="845ab196-d017-529b-ab29-0a910649c7a3" name="Start" type="Start"><subsheetid>0d9b0ef8-6aaa-57d4-b4ef-7a2fc3d8c236</subsheetid><loginhibit /><display x="15" y="-105" w="60" h="30" /><inputs><input type="text" name="UrlBase" narrative="URL de la plataforma, ej. https://cada-hora-cuenta.onrender.com" stage="UrlBase" /><input type="text" name="Email" narrative="Correo de la cuenta robot" stage="Email" /><input type="text" name="Password" narrative="Contraseña" stage="Password" /></inputs><onsuccess>c328e6cb-6711-5e95-90d6-a841fca7c015</onsuccess></stage>
+<stage stageid="c328e6cb-6711-5e95-90d6-a841fca7c015" name="Login" type="Code"><subsheetid>0d9b0ef8-6aaa-57d4-b4ef-7a2fc3d8c236</subsheetid><narrative>Autentica al robot en la plataforma y obtiene un token JWT.</narrative><loginhibit /><display x="15" y="-15" w="90" h="45" /><inputs><input type="text" name="UrlBase" expr="[UrlBase]" /><input type="text" name="Email" expr="[Email]" /><input type="text" name="Password" expr="[Password]" /></inputs><outputs><output type="text" name="Token" stage="Token" /><output type="flag" name="Exito" stage="Exito" /><output type="text" name="Mensaje" stage="Mensaje" /></outputs><onsuccess>0e80f131-887a-5067-8e1d-610a826d43d6</onsuccess><code><![CDATA[
+int status;
+string resp = Http("POST", UrlUnir(UrlBase, "/api/auth/login"), null,
+    "{\"email\":\"" + JsonEsc(Email) + "\",\"password\":\"" + JsonEsc(Password) + "\"}", out status);
+Token = JsonCampo(resp, "token");
+Exito = status == 200 && Token.Length > 0;
+Mensaje = Exito ? "Autenticado como " + Email : ("Error " + status + ": " + JsonCampo(resp, "error"));
+]]></code></stage>
+<stage stageid="0e80f131-887a-5067-8e1d-610a826d43d6" name="End" type="End"><subsheetid>0d9b0ef8-6aaa-57d4-b4ef-7a2fc3d8c236</subsheetid><loginhibit /><display x="15" y="90" w="60" h="30" /><outputs><output type="text" name="Token" narrative="Token de sesión" stage="Token" /><output type="flag" name="Exito" narrative="True si autenticó" stage="Exito" /><output type="text" name="Mensaje" narrative="Detalle" stage="Mensaje" /></outputs></stage>
+<stage stageid="10db2b05-71a7-5cb9-85b7-47be7a859904" name="UrlBase" type="Data"><subsheetid>0d9b0ef8-6aaa-57d4-b4ef-7a2fc3d8c236</subsheetid><narrative>URL de la plataforma, ej. https://cada-hora-cuenta.onrender.com</narrative><display x="180" y="-105" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="5f4315f5-e3ee-5d50-8c8e-7dbc8241b92e" name="Email" type="Data"><subsheetid>0d9b0ef8-6aaa-57d4-b4ef-7a2fc3d8c236</subsheetid><narrative>Correo de la cuenta robot</narrative><display x="180" y="-65" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="2d0e1883-4a5b-5e78-8909-1a43cca67264" name="Password" type="Data"><subsheetid>0d9b0ef8-6aaa-57d4-b4ef-7a2fc3d8c236</subsheetid><narrative>Contraseña</narrative><display x="180" y="-25" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="c04fad3a-6980-59ff-8019-56ce5fa90dfc" name="Token" type="Data"><subsheetid>0d9b0ef8-6aaa-57d4-b4ef-7a2fc3d8c236</subsheetid><narrative>Token de sesión</narrative><display x="300" y="-105" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="9ddc2866-fef5-510f-9096-97e13ca51a64" name="Exito" type="Data"><subsheetid>0d9b0ef8-6aaa-57d4-b4ef-7a2fc3d8c236</subsheetid><narrative>True si autenticó</narrative><display x="300" y="-65" w="90" h="30" /><datatype>flag</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="b060fe00-c331-5613-82de-2faf343e465f" name="Mensaje" type="Data"><subsheetid>0d9b0ef8-6aaa-57d4-b4ef-7a2fc3d8c236</subsheetid><narrative>Detalle</narrative><display x="300" y="-25" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="7909d6e1-9d78-57f2-8e9a-1958ae75affc" name="Descripcion" type="Note"><subsheetid>0d9b0ef8-6aaa-57d4-b4ef-7a2fc3d8c236</subsheetid><narrative>Autentica al robot en la plataforma y obtiene un token JWT.</narrative><display x="-180" y="-105" w="180" h="60" /></stage>
+<stage stageid="6c3c9482-0ce0-58b3-8cbc-d65f22609712" name="Start" type="Start"><subsheetid>592ad4cc-4c14-5677-9469-8cb7ecc0a092</subsheetid><loginhibit /><display x="15" y="-105" w="60" h="30" /><inputs><input type="text" name="Carpeta" narrative="Carpeta de entrada" stage="Carpeta" /><input type="text" name="Patron" narrative="Patrón, ej. *.xlsx" stage="Patron" /></inputs><onsuccess>8457e42a-98d6-5d3d-b441-ceffbf7d6cf1</onsuccess></stage>
+<stage stageid="8457e42a-98d6-5d3d-b441-ceffbf7d6cf1" name="Listar Archivos" type="Code"><subsheetid>592ad4cc-4c14-5677-9469-8cb7ecc0a092</subsheetid><narrative>Lista los Excel pendientes en la carpeta de entrada y deduce si son BUK o SIC por su nombre.</narrative><loginhibit /><display x="15" y="-15" w="90" h="45" /><inputs><input type="text" name="Carpeta" expr="[Carpeta]" /><input type="text" name="Patron" expr="[Patron]" /></inputs><outputs><output type="collection" name="Archivos" stage="Archivos" /><output type="number" name="Cantidad" stage="Cantidad" /></outputs><onsuccess>428644f8-5d62-52b6-be50-0d368c4a7790</onsuccess><code><![CDATA[
+Archivos = new DataTable("Archivos");
+Archivos.Columns.Add("Nombre", typeof(string));
+Archivos.Columns.Add("Ruta", typeof(string));
+Archivos.Columns.Add("Tipo", typeof(string));
+if (!System.IO.Directory.Exists(Carpeta)) System.IO.Directory.CreateDirectory(Carpeta);
+string patron = string.IsNullOrEmpty(Patron) ? "*.xlsx" : Patron;
+var lista = new System.IO.DirectoryInfo(Carpeta).GetFiles(patron);
+System.Array.Sort(lista, (a, b) => a.LastWriteTime.CompareTo(b.LastWriteTime));
+foreach (var f in lista)
+{
+    if (f.Name.StartsWith("~$")) continue; // archivo temporal de Excel abierto
+    string n = Norm(f.Name);
+    string tipo = n.Contains("sic") ? "SIC" : (n.Contains("buk") || n.Contains("contrato") || n.Contains("dotacion")) ? "BUK" : "DESCONOCIDO";
+    Archivos.Rows.Add(f.Name, f.FullName, tipo);
+}
+Cantidad = Archivos.Rows.Count;
+]]></code></stage>
+<stage stageid="428644f8-5d62-52b6-be50-0d368c4a7790" name="End" type="End"><subsheetid>592ad4cc-4c14-5677-9469-8cb7ecc0a092</subsheetid><loginhibit /><display x="15" y="90" w="60" h="30" /><outputs><output type="collection" name="Archivos" narrative="Nombre, Ruta, Tipo" stage="Archivos" /><output type="number" name="Cantidad" narrative="Cantidad de archivos" stage="Cantidad" /></outputs></stage>
+<stage stageid="65cd382c-ad23-5cb5-a434-eb3adde57577" name="Carpeta" type="Data"><subsheetid>592ad4cc-4c14-5677-9469-8cb7ecc0a092</subsheetid><narrative>Carpeta de entrada</narrative><display x="180" y="-105" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="1be0c7cd-0315-5bbe-8319-728194852f53" name="Patron" type="Data"><subsheetid>592ad4cc-4c14-5677-9469-8cb7ecc0a092</subsheetid><narrative>Patrón, ej. *.xlsx</narrative><display x="180" y="-65" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="56347802-7c48-5d0a-a1a3-0cec678a83ab" name="Archivos" type="Collection"><subsheetid>592ad4cc-4c14-5677-9469-8cb7ecc0a092</subsheetid><narrative>Nombre, Ruta, Tipo</narrative><display x="300" y="-105" w="90" h="30" /><datatype>collection</datatype><private /><alwaysinit /><collectioninfo><field name="Nombre" type="text" /><field name="Ruta" type="text" /><field name="Tipo" type="text" /></collectioninfo></stage>
+<stage stageid="5dbb258f-967a-5de5-804b-945ccd711bde" name="Cantidad" type="Data"><subsheetid>592ad4cc-4c14-5677-9469-8cb7ecc0a092</subsheetid><narrative>Cantidad de archivos</narrative><display x="300" y="-65" w="90" h="30" /><datatype>number</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="0db5ec0e-6364-5f15-afcc-bf6a12b83e2b" name="Descripcion" type="Note"><subsheetid>592ad4cc-4c14-5677-9469-8cb7ecc0a092</subsheetid><narrative>Lista los Excel pendientes en la carpeta de entrada y deduce si son BUK o SIC por su nombre.</narrative><display x="-180" y="-105" w="180" h="60" /></stage>
+<stage stageid="f419af4f-5b2d-55fe-a009-5e84de151caa" name="Start" type="Start"><subsheetid>a61b4277-8193-5fcf-8f0a-eec7ec3207a4</subsheetid><loginhibit /><display x="15" y="-105" w="60" h="30" /><inputs><input type="text" name="Ruta" narrative="Ruta completa del archivo" stage="Ruta" /></inputs><onsuccess>d6451386-e3c5-56c6-a4a2-8e0f7ecb59cf</onsuccess></stage>
+<stage stageid="d6451386-e3c5-56c6-a4a2-8e0f7ecb59cf" name="Leer Excel" type="Code"><subsheetid>a61b4277-8193-5fcf-8f0a-eec7ec3207a4</subsheetid><narrative>Lee la primera hoja de un .xlsx (sin necesitar Microsoft Excel instalado). Detecta la fila de encabezado buscando "PersonaId".</narrative><loginhibit /><display x="15" y="-15" w="90" h="45" /><inputs><input type="text" name="Ruta" expr="[Ruta]" /></inputs><outputs><output type="collection" name="Datos" stage="Datos" /><output type="number" name="Filas" stage="Filas" /><output type="text" name="Hoja" stage="Hoja" /></outputs><onsuccess>5c63ef02-a951-5571-8e7b-cb76fd7d8b31</onsuccess><code><![CDATA[
+string h;
+Datos = LeerXlsx(Ruta, out h);
+Hoja = h;
+Filas = Datos.Rows.Count;
+]]></code></stage>
+<stage stageid="5c63ef02-a951-5571-8e7b-cb76fd7d8b31" name="End" type="End"><subsheetid>a61b4277-8193-5fcf-8f0a-eec7ec3207a4</subsheetid><loginhibit /><display x="15" y="90" w="60" h="30" /><outputs><output type="collection" name="Datos" narrative="Filas del reporte (columna Fila = n° de fila en Excel)" stage="Datos" /><output type="number" name="Filas" narrative="Cantidad de filas" stage="Filas" /><output type="text" name="Hoja" narrative="Nombre de la hoja leída" stage="Hoja" /></outputs></stage>
+<stage stageid="3d4b60f5-545f-5ccb-8ae8-13966be6fda6" name="Ruta" type="Data"><subsheetid>a61b4277-8193-5fcf-8f0a-eec7ec3207a4</subsheetid><narrative>Ruta completa del archivo</narrative><display x="180" y="-105" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="87c84cb7-3207-5a89-8a1b-489511890f66" name="Datos" type="Collection"><subsheetid>a61b4277-8193-5fcf-8f0a-eec7ec3207a4</subsheetid><narrative>Filas del reporte (columna Fila = n° de fila en Excel)</narrative><display x="300" y="-105" w="90" h="30" /><datatype>collection</datatype><private /><alwaysinit /></stage>
+<stage stageid="be70f497-a372-58e0-8574-634c71e5273a" name="Filas" type="Data"><subsheetid>a61b4277-8193-5fcf-8f0a-eec7ec3207a4</subsheetid><narrative>Cantidad de filas</narrative><display x="300" y="-65" w="90" h="30" /><datatype>number</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="b87d820e-d509-56ae-a5db-89a5a51cd9d5" name="Hoja" type="Data"><subsheetid>a61b4277-8193-5fcf-8f0a-eec7ec3207a4</subsheetid><narrative>Nombre de la hoja leída</narrative><display x="300" y="-25" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="f8ba716b-0a5e-534a-9d0f-7428ec3f9fa3" name="Descripcion" type="Note"><subsheetid>a61b4277-8193-5fcf-8f0a-eec7ec3207a4</subsheetid><narrative>Lee la primera hoja de un .xlsx (sin necesitar Microsoft Excel instalado). Detecta la fila de encabezado buscando "PersonaId".</narrative><display x="-180" y="-105" w="180" h="60" /></stage>
+<stage stageid="fb7da4dc-e859-539c-9404-49b119d6e607" name="Start" type="Start"><subsheetid>d23dbb02-71a8-5446-be9f-9580cdb75f20</subsheetid><loginhibit /><display x="15" y="-105" w="60" h="30" /><inputs><input type="collection" name="Datos" narrative="Salida de Leer Excel" stage="Datos" /><input type="number" name="JornadaMaxEneAbr" narrative="Jornada legal ene–abr (44)" stage="JornadaMaxEneAbr" /><input type="number" name="JornadaMaxMayDic" narrative="Jornada legal may–dic (42)" stage="JornadaMaxMayDic" /></inputs><onsuccess>06b6c45e-fd04-556b-b7c1-5a02b2763337</onsuccess></stage>
+<stage stageid="06b6c45e-fd04-556b-b7c1-5a02b2763337" name="Validar Reporte BUK" type="Code"><subsheetid>d23dbb02-71a8-5446-be9f-9580cdb75f20</subsheetid><narrative>Valida el reporte de dotación BUK: IDs, instituto, periodo, horas vs. jornada legal, cargo, fechas, duplicados.</narrative><loginhibit /><display x="15" y="-15" w="90" h="45" /><inputs><input type="collection" name="Datos" expr="[Datos]" /><input type="number" name="JornadaMaxEneAbr" expr="[JornadaMaxEneAbr]" /><input type="number" name="JornadaMaxMayDic" expr="[JornadaMaxMayDic]" /></inputs><outputs><output type="collection" name="Validos" stage="Validos" /><output type="collection" name="Errores" stage="Errores" /><output type="number" name="CantValidos" stage="CantValidos" /><output type="number" name="CantErrores" stage="CantErrores" /></outputs><onsuccess>5cb48e80-da5e-5261-a609-1636faa70e9b</onsuccess><code><![CDATA[
+Validos = Datos.Clone();
+Errores = NuevaTablaErrores();
+decimal maxA = JornadaMaxEneAbr > 0 ? JornadaMaxEneAbr : 44;
+decimal maxB = JornadaMaxMayDic > 0 ? JornadaMaxMayDic : 42;
+var vistos = new System.Collections.Generic.Dictionary<string, decimal>();
+foreach (DataRow r in Datos.Rows)
+{
+    decimal fila = Datos.Columns.Contains("Fila") ? System.Convert.ToDecimal(r["Fila"]) : Datos.Rows.IndexOf(r) + 2;
+    var errs = new System.Collections.Generic.List<string[]>();
+    string pid = Col(r, "PersonaId"), it = Col(r, "IT"), per = Col(r, "Periodo"), hs = Col(r, "Horas Semanales"), cargo = Col(r, "Cargo");
+    string fi = Col(r, "Fecha Ingreso Compañía", "Fecha Ingreso"), ft = Col(r, "Fecha Término", "Fecha Termino"), nd = Col(r, "Ndias");
+    decimal npid = Num(pid);
+    if (npid <= 0 || npid != System.Math.Floor(npid)) errs.Add(new[] { "PersonaId", pid, "PersonaId vacío o no numérico" });
+    if (Num(it) <= 0) errs.Add(new[] { "IT", it, "Código de instituto vacío o inválido" });
+    var dper = Fecha(per);
+    if (dper == null) errs.Add(new[] { "Periodo", per, "Periodo vacío o con formato inválido" });
+    decimal h = Num(hs);
+    if (h < 0) errs.Add(new[] { "Horas Semanales", hs, "Horas semanales vacías o no numéricas" });
+    else if (h == 0) errs.Add(new[] { "Horas Semanales", hs, "Horas semanales deben ser mayores a 0" });
+    else if (dper != null)
+    {
+        decimal max = dper.Value.Month <= 4 ? maxA : maxB;
+        if (h > max) errs.Add(new[] { "Horas Semanales", hs, "Supera la jornada legal vigente (" + max + " h)" });
+    }
+    if (cargo.Length == 0) errs.Add(new[] { "Cargo", cargo, "Cargo vacío" });
+    var dfi = Fecha(fi); var dft = Fecha(ft);
+    if (fi.Length > 0 && dfi == null) errs.Add(new[] { "Fecha Ingreso", fi, "Fecha de ingreso inválida" });
+    if (ft.Length > 0 && dft == null) errs.Add(new[] { "Fecha Término", ft, "Fecha de término inválida" });
+    if (dfi != null && dft != null && dft < dfi) errs.Add(new[] { "Fecha Término", ft, "Fecha de término anterior a la fecha de ingreso" });
+    if (nd.Length > 0 && (Num(nd) < 1 || Num(nd) > 7)) errs.Add(new[] { "Ndias", nd, "Días de jornada fuera de rango (1-7)" });
+    if (errs.Count == 0)
+    {
+        string key = pid + "|" + it + "|" + dper.Value.ToString("yyyy-MM");
+        if (vistos.ContainsKey(key)) errs.Add(new[] { "PersonaId", pid, "Registro duplicado (igual a la fila " + vistos[key] + ")" });
+        else vistos[key] = fila;
+    }
+    foreach (var e in errs) Errores.Rows.Add(fila, e[0], e[1], e[2], "error", pid);
+    if (errs.Count == 0) Validos.ImportRow(r);
+}
+CantValidos = Validos.Rows.Count;
+CantErrores = Errores.Rows.Count;
+]]></code></stage>
+<stage stageid="5cb48e80-da5e-5261-a609-1636faa70e9b" name="End" type="End"><subsheetid>d23dbb02-71a8-5446-be9f-9580cdb75f20</subsheetid><loginhibit /><display x="15" y="90" w="60" h="30" /><outputs><output type="collection" name="Validos" narrative="Filas válidas" stage="Validos" /><output type="collection" name="Errores" narrative="Fila, Campo, Valor, Mensaje, Severidad, PersonaId" stage="Errores" /><output type="number" name="CantValidos" narrative="" stage="CantValidos" /><output type="number" name="CantErrores" narrative="" stage="CantErrores" /></outputs></stage>
+<stage stageid="a613925a-12f9-58df-8e51-f6a6a382b21d" name="Datos" type="Collection"><subsheetid>d23dbb02-71a8-5446-be9f-9580cdb75f20</subsheetid><narrative>Salida de Leer Excel</narrative><display x="180" y="-105" w="90" h="30" /><datatype>collection</datatype><private /><alwaysinit /></stage>
+<stage stageid="28643ce4-1f5e-50a4-9bfb-5979819203f8" name="JornadaMaxEneAbr" type="Data"><subsheetid>d23dbb02-71a8-5446-be9f-9580cdb75f20</subsheetid><narrative>Jornada legal ene–abr (44)</narrative><display x="180" y="-65" w="90" h="30" /><datatype>number</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="f7b95a31-7541-56ff-ac6f-cd74ec05a632" name="JornadaMaxMayDic" type="Data"><subsheetid>d23dbb02-71a8-5446-be9f-9580cdb75f20</subsheetid><narrative>Jornada legal may–dic (42)</narrative><display x="180" y="-25" w="90" h="30" /><datatype>number</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="d6900468-a6f9-583e-8e74-d1048f068cc3" name="Validos" type="Collection"><subsheetid>d23dbb02-71a8-5446-be9f-9580cdb75f20</subsheetid><narrative>Filas válidas</narrative><display x="300" y="-105" w="90" h="30" /><datatype>collection</datatype><private /><alwaysinit /></stage>
+<stage stageid="31cc134a-f1a2-5103-bb22-43450abd3f22" name="Errores" type="Collection"><subsheetid>d23dbb02-71a8-5446-be9f-9580cdb75f20</subsheetid><narrative>Fila, Campo, Valor, Mensaje, Severidad, PersonaId</narrative><display x="300" y="-65" w="90" h="30" /><datatype>collection</datatype><private /><alwaysinit /><collectioninfo><field name="Fila" type="number" /><field name="Campo" type="text" /><field name="Valor" type="text" /><field name="Mensaje" type="text" /><field name="Severidad" type="text" /><field name="PersonaId" type="text" /></collectioninfo></stage>
+<stage stageid="21fa2893-7b0d-53e8-b19f-06227835ac50" name="CantValidos" type="Data"><subsheetid>d23dbb02-71a8-5446-be9f-9580cdb75f20</subsheetid><narrative></narrative><display x="300" y="-25" w="90" h="30" /><datatype>number</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="7dde5fed-de8e-5f34-8c57-5ac2ce78b726" name="CantErrores" type="Data"><subsheetid>d23dbb02-71a8-5446-be9f-9580cdb75f20</subsheetid><narrative></narrative><display x="300" y="15" w="90" h="30" /><datatype>number</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="c4085d66-e23f-56b5-bfbf-c2529cc75dbf" name="Descripcion" type="Note"><subsheetid>d23dbb02-71a8-5446-be9f-9580cdb75f20</subsheetid><narrative>Valida el reporte de dotación BUK: IDs, instituto, periodo, horas vs. jornada legal, cargo, fechas, duplicados.</narrative><display x="-180" y="-105" w="180" h="60" /></stage>
+<stage stageid="b3df61fa-1283-5b74-a4a5-e21edadecbfa" name="Start" type="Start"><subsheetid>f8ae5e6d-ce32-594f-b181-1079d3e4e49c</subsheetid><loginhibit /><display x="15" y="-105" w="60" h="30" /><inputs><input type="collection" name="Datos" narrative="Salida de Leer Excel" stage="Datos" /></inputs><onsuccess>29b8ff94-ae6e-5c2a-a30e-6f4915998265</onsuccess></stage>
+<stage stageid="29b8ff94-ae6e-5c2a-a30e-6f4915998265" name="Validar Reporte SIC" type="Code"><subsheetid>f8ae5e6d-ce32-594f-b181-1079d3e4e49c</subsheetid><narrative>Valida el reporte de atenciones realizadas del SIC.</narrative><loginhibit /><display x="15" y="-15" w="90" h="45" /><inputs><input type="collection" name="Datos" expr="[Datos]" /></inputs><outputs><output type="collection" name="Validos" stage="Validos" /><output type="collection" name="Errores" stage="Errores" /><output type="number" name="CantValidos" stage="CantValidos" /><output type="number" name="CantErrores" stage="CantErrores" /></outputs><onsuccess>5bfe1afa-bc43-569c-9adf-3220e4312a7f</onsuccess><code><![CDATA[
+Validos = Datos.Clone();
+Errores = NuevaTablaErrores();
+var vistos = new System.Collections.Generic.HashSet<string>();
+foreach (DataRow r in Datos.Rows)
+{
+    decimal fila = Datos.Columns.Contains("Fila") ? System.Convert.ToDecimal(r["Fila"]) : Datos.Rows.IndexOf(r) + 2;
+    var errs = new System.Collections.Generic.List<string[]>();
+    string pid = Col(r, "PersonaId"), it = Col(r, "IT"), per = Col(r, "Periodo");
+    string d = Col(r, "Atenciones Directas", "Directas"), ind = Col(r, "Atenciones Indirectas", "Indirectas");
+    if (Num(pid) <= 0) errs.Add(new[] { "PersonaId", pid, "PersonaId vacío o no numérico" });
+    if (Num(it) <= 0) errs.Add(new[] { "IT", it, "Instituto inválido" });
+    var dp = Fecha(per);
+    if (dp == null) errs.Add(new[] { "Periodo", per, "Periodo inválido" });
+    decimal dv, iv;
+    if (!decimal.TryParse(d.Replace(",", "."), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out dv)) errs.Add(new[] { "Atenciones Directas", d, "Valor vacío o no numérico" });
+    else if (dv < 0) errs.Add(new[] { "Atenciones Directas", d, "Atenciones negativas" });
+    if (ind.Length > 0 && (!decimal.TryParse(ind.Replace(",", "."), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out iv) || iv < 0)) errs.Add(new[] { "Atenciones Indirectas", ind, "Atenciones negativas o no numéricas" });
+    if (errs.Count == 0)
+    {
+        string key = pid + "|" + it + "|" + dp.Value.ToString("yyyy-MM");
+        if (!vistos.Add(key)) errs.Add(new[] { "PersonaId", pid, "Registro duplicado" });
+    }
+    foreach (var e in errs) Errores.Rows.Add(fila, e[0], e[1], e[2], "error", pid);
+    if (errs.Count == 0) Validos.ImportRow(r);
+}
+CantValidos = Validos.Rows.Count;
+CantErrores = Errores.Rows.Count;
+]]></code></stage>
+<stage stageid="5bfe1afa-bc43-569c-9adf-3220e4312a7f" name="End" type="End"><subsheetid>f8ae5e6d-ce32-594f-b181-1079d3e4e49c</subsheetid><loginhibit /><display x="15" y="90" w="60" h="30" /><outputs><output type="collection" name="Validos" narrative="Filas válidas" stage="Validos" /><output type="collection" name="Errores" narrative="Fila, Campo, Valor, Mensaje, Severidad, PersonaId" stage="Errores" /><output type="number" name="CantValidos" narrative="" stage="CantValidos" /><output type="number" name="CantErrores" narrative="" stage="CantErrores" /></outputs></stage>
+<stage stageid="087a2ff6-2d03-5f9f-8077-b366a587683c" name="Datos" type="Collection"><subsheetid>f8ae5e6d-ce32-594f-b181-1079d3e4e49c</subsheetid><narrative>Salida de Leer Excel</narrative><display x="180" y="-105" w="90" h="30" /><datatype>collection</datatype><private /><alwaysinit /></stage>
+<stage stageid="96ee6787-564f-5f78-aa84-20e4a8d21c4a" name="Validos" type="Collection"><subsheetid>f8ae5e6d-ce32-594f-b181-1079d3e4e49c</subsheetid><narrative>Filas válidas</narrative><display x="300" y="-105" w="90" h="30" /><datatype>collection</datatype><private /><alwaysinit /></stage>
+<stage stageid="e5a98d44-93e8-5ea2-83b1-2753c99d3005" name="Errores" type="Collection"><subsheetid>f8ae5e6d-ce32-594f-b181-1079d3e4e49c</subsheetid><narrative>Fila, Campo, Valor, Mensaje, Severidad, PersonaId</narrative><display x="300" y="-65" w="90" h="30" /><datatype>collection</datatype><private /><alwaysinit /><collectioninfo><field name="Fila" type="number" /><field name="Campo" type="text" /><field name="Valor" type="text" /><field name="Mensaje" type="text" /><field name="Severidad" type="text" /><field name="PersonaId" type="text" /></collectioninfo></stage>
+<stage stageid="1cead710-1fbd-5bf4-995a-d5506733f8b4" name="CantValidos" type="Data"><subsheetid>f8ae5e6d-ce32-594f-b181-1079d3e4e49c</subsheetid><narrative></narrative><display x="300" y="-25" w="90" h="30" /><datatype>number</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="57b2d22f-a0a9-5243-ae89-0f94deea7c68" name="CantErrores" type="Data"><subsheetid>f8ae5e6d-ce32-594f-b181-1079d3e4e49c</subsheetid><narrative></narrative><display x="300" y="15" w="90" h="30" /><datatype>number</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="4b82df4d-1e2d-5b1a-8ffd-6e76abbdfd51" name="Descripcion" type="Note"><subsheetid>f8ae5e6d-ce32-594f-b181-1079d3e4e49c</subsheetid><narrative>Valida el reporte de atenciones realizadas del SIC.</narrative><display x="-180" y="-105" w="180" h="60" /></stage>
+<stage stageid="47d4bff7-973e-5801-b624-24b33a6594be" name="Start" type="Start"><subsheetid>bddf1172-3313-518b-bc26-b77966abdae4</subsheetid><loginhibit /><display x="15" y="-105" w="60" h="30" /><inputs><input type="text" name="UrlBase" narrative="" stage="UrlBase" /><input type="text" name="Token" narrative="" stage="Token" /><input type="text" name="Tipo" narrative="BUK o SIC" stage="Tipo" /><input type="text" name="Archivo" narrative="Nombre del archivo" stage="Archivo" /><input type="collection" name="Validos" narrative="" stage="Validos" /><input type="collection" name="Errores" narrative="" stage="Errores" /></inputs><onsuccess>97a00248-74d1-57a3-896a-0d9933ee89f5</onsuccess></stage>
+<stage stageid="97a00248-74d1-57a3-896a-0d9933ee89f5" name="Enviar Ingesta" type="Code"><subsheetid>bddf1172-3313-518b-bc26-b77966abdae4</subsheetid><narrative>Envía las filas válidas y los errores detectados a la plataforma, que detecta cambios y recalcula la planificación.</narrative><loginhibit /><display x="15" y="-15" w="90" h="45" /><inputs><input type="text" name="UrlBase" expr="[UrlBase]" /><input type="text" name="Token" expr="[Token]" /><input type="text" name="Tipo" expr="[Tipo]" /><input type="text" name="Archivo" expr="[Archivo]" /><input type="collection" name="Validos" expr="[Validos]" /><input type="collection" name="Errores" expr="[Errores]" /></inputs><outputs><output type="flag" name="Exito" stage="Exito" /><output type="number" name="IngestaId" stage="IngestaId" /><output type="number" name="Cambios" stage="Cambios" /><output type="text" name="Mensaje" stage="Mensaje" /><output type="text" name="Respuesta" stage="Respuesta" /></outputs><onsuccess>a3fbca7e-b22b-55c4-b6af-993ec7f0b1df</onsuccess><code><![CDATA[
+string body = "{\"tipo\":\"" + JsonEsc(Tipo) + "\",\"archivo\":\"" + JsonEsc(Archivo) + "\",\"filas\":" + TablaAJson(Validos) + ",\"errores\":" + TablaAJson(Errores) + "}";
+int status;
+Respuesta = Http("POST", UrlUnir(UrlBase, "/api/bot/ingesta"), Token, body, out status);
+Exito = status == 200;
+decimal n;
+IngestaId = decimal.TryParse(JsonCampo(Respuesta, "ingesta_id"), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out n) ? n : 0;
+Cambios = decimal.TryParse(JsonCampo(Respuesta, "cambios"), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out n) ? n : 0;
+Mensaje = Exito ? JsonCampo(Respuesta, "mensaje") : ("Error " + status + ": " + JsonCampo(Respuesta, "error"));
+]]></code></stage>
+<stage stageid="a3fbca7e-b22b-55c4-b6af-993ec7f0b1df" name="End" type="End"><subsheetid>bddf1172-3313-518b-bc26-b77966abdae4</subsheetid><loginhibit /><display x="15" y="90" w="60" h="30" /><outputs><output type="flag" name="Exito" narrative="" stage="Exito" /><output type="number" name="IngestaId" narrative="" stage="IngestaId" /><output type="number" name="Cambios" narrative="Cambios detectados (altas, bajas, jornada…)" stage="Cambios" /><output type="text" name="Mensaje" narrative="" stage="Mensaje" /><output type="text" name="Respuesta" narrative="JSON completo" stage="Respuesta" /></outputs></stage>
+<stage stageid="07d66745-9476-5ff4-a050-716898b64560" name="UrlBase" type="Data"><subsheetid>bddf1172-3313-518b-bc26-b77966abdae4</subsheetid><narrative></narrative><display x="180" y="-105" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="e5d267c0-acad-56d9-80ec-f7b8b2383c80" name="Token" type="Data"><subsheetid>bddf1172-3313-518b-bc26-b77966abdae4</subsheetid><narrative></narrative><display x="180" y="-65" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="73352933-6034-5a4b-9b84-27c5cad650e2" name="Tipo" type="Data"><subsheetid>bddf1172-3313-518b-bc26-b77966abdae4</subsheetid><narrative>BUK o SIC</narrative><display x="180" y="-25" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="b5a9afbc-0fcc-5c2b-bd4a-fc0dcac0dbfd" name="Archivo" type="Data"><subsheetid>bddf1172-3313-518b-bc26-b77966abdae4</subsheetid><narrative>Nombre del archivo</narrative><display x="180" y="15" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="b78499f0-cb9c-5673-97f4-5a4be72f10aa" name="Validos" type="Collection"><subsheetid>bddf1172-3313-518b-bc26-b77966abdae4</subsheetid><narrative></narrative><display x="180" y="55" w="90" h="30" /><datatype>collection</datatype><private /><alwaysinit /></stage>
+<stage stageid="bdf96033-8268-5d29-b9ec-8dfbae106972" name="Errores" type="Collection"><subsheetid>bddf1172-3313-518b-bc26-b77966abdae4</subsheetid><narrative></narrative><display x="180" y="95" w="90" h="30" /><datatype>collection</datatype><private /><alwaysinit /></stage>
+<stage stageid="dbb3fb2d-4a3a-59d1-87af-890920276b26" name="Exito" type="Data"><subsheetid>bddf1172-3313-518b-bc26-b77966abdae4</subsheetid><narrative></narrative><display x="300" y="-105" w="90" h="30" /><datatype>flag</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="efea6299-2d2f-54ec-89da-b95aa165d05c" name="IngestaId" type="Data"><subsheetid>bddf1172-3313-518b-bc26-b77966abdae4</subsheetid><narrative></narrative><display x="300" y="-65" w="90" h="30" /><datatype>number</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="aaeb958f-455c-5be6-b7a4-ca76f2f8b6f1" name="Cambios" type="Data"><subsheetid>bddf1172-3313-518b-bc26-b77966abdae4</subsheetid><narrative>Cambios detectados (altas, bajas, jornada…)</narrative><display x="300" y="-25" w="90" h="30" /><datatype>number</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="d5437201-846d-5633-a9e0-7b1382cbdd89" name="Mensaje" type="Data"><subsheetid>bddf1172-3313-518b-bc26-b77966abdae4</subsheetid><narrative></narrative><display x="300" y="15" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="f3fcd7d1-a26d-5791-83ac-0b5467baa4ff" name="Respuesta" type="Data"><subsheetid>bddf1172-3313-518b-bc26-b77966abdae4</subsheetid><narrative>JSON completo</narrative><display x="300" y="55" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="a5f470ca-1ab9-5fbd-b7d8-275557e1784e" name="Descripcion" type="Note"><subsheetid>bddf1172-3313-518b-bc26-b77966abdae4</subsheetid><narrative>Envía las filas válidas y los errores detectados a la plataforma, que detecta cambios y recalcula la planificación.</narrative><display x="-180" y="-105" w="180" h="60" /></stage>
+<stage stageid="4769bb72-81e9-5500-af44-d45320d0d8f1" name="Start" type="Start"><subsheetid>2ce8fdf8-30d7-5f98-85f7-1c55d45e6fca</subsheetid><loginhibit /><display x="15" y="-105" w="60" h="30" /><inputs><input type="collection" name="Errores" narrative="" stage="Errores" /><input type="text" name="Ruta" narrative="Ruta del CSV a crear" stage="Ruta" /></inputs><onsuccess>222e5635-8708-5b5b-9889-3d96bde71b39</onsuccess></stage>
+<stage stageid="222e5635-8708-5b5b-9889-3d96bde71b39" name="Guardar Errores CSV" type="Code"><subsheetid>2ce8fdf8-30d7-5f98-85f7-1c55d45e6fca</subsheetid><narrative>Escribe los errores detectados en un CSV (UTF-8, separador ;) para informar a Gerencia de Personas.</narrative><loginhibit /><display x="15" y="-15" w="90" h="45" /><inputs><input type="collection" name="Errores" expr="[Errores]" /><input type="text" name="Ruta" expr="[Ruta]" /></inputs><outputs><output type="flag" name="Exito" stage="Exito" /></outputs><onsuccess>d367fb11-ddfc-5164-9d69-ccc1dc90bfa6</onsuccess><code><![CDATA[
+string dir = System.IO.Path.GetDirectoryName(Ruta);
+if (!string.IsNullOrEmpty(dir) && !System.IO.Directory.Exists(dir)) System.IO.Directory.CreateDirectory(dir);
+var sb = new System.Text.StringBuilder();
+for (int j = 0; j < Errores.Columns.Count; j++) { if (j > 0) sb.Append(";"); sb.Append(Errores.Columns[j].ColumnName); }
+sb.AppendLine();
+foreach (DataRow r in Errores.Rows)
+{
+    for (int j = 0; j < Errores.Columns.Count; j++)
+    {
+        if (j > 0) sb.Append(";");
+        string v = System.Convert.ToString(r[j]) ?? "";
+        sb.Append("\"").Append(v.Replace("\"", "\"\"")).Append("\"");
+    }
+    sb.AppendLine();
+}
+System.IO.File.WriteAllText(Ruta, sb.ToString(), new System.Text.UTF8Encoding(true));
+Exito = true;
+]]></code></stage>
+<stage stageid="d367fb11-ddfc-5164-9d69-ccc1dc90bfa6" name="End" type="End"><subsheetid>2ce8fdf8-30d7-5f98-85f7-1c55d45e6fca</subsheetid><loginhibit /><display x="15" y="90" w="60" h="30" /><outputs><output type="flag" name="Exito" narrative="" stage="Exito" /></outputs></stage>
+<stage stageid="44457df8-83c5-559b-98d8-d58dc20ca167" name="Errores" type="Collection"><subsheetid>2ce8fdf8-30d7-5f98-85f7-1c55d45e6fca</subsheetid><narrative></narrative><display x="180" y="-105" w="90" h="30" /><datatype>collection</datatype><private /><alwaysinit /></stage>
+<stage stageid="6b7a3f0e-2dcc-5d0d-8049-8bfebaa0dbbd" name="Ruta" type="Data"><subsheetid>2ce8fdf8-30d7-5f98-85f7-1c55d45e6fca</subsheetid><narrative>Ruta del CSV a crear</narrative><display x="180" y="-65" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="535cd318-f7cb-5803-82b8-86b043ee5cab" name="Exito" type="Data"><subsheetid>2ce8fdf8-30d7-5f98-85f7-1c55d45e6fca</subsheetid><narrative></narrative><display x="300" y="-105" w="90" h="30" /><datatype>flag</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="2d52eabc-8222-578d-84fe-80b4708c082e" name="Descripcion" type="Note"><subsheetid>2ce8fdf8-30d7-5f98-85f7-1c55d45e6fca</subsheetid><narrative>Escribe los errores detectados en un CSV (UTF-8, separador ;) para informar a Gerencia de Personas.</narrative><display x="-180" y="-105" w="180" h="60" /></stage>
+<stage stageid="346b60c6-11e4-5255-ac83-627aa055c854" name="Start" type="Start"><subsheetid>11bc42d8-2633-5c3e-92e5-001c84c655c8</subsheetid><loginhibit /><display x="15" y="-105" w="60" h="30" /><inputs><input type="text" name="Origen" narrative="" stage="Origen" /><input type="text" name="CarpetaDestino" narrative="" stage="CarpetaDestino" /></inputs><onsuccess>b6b2c5c6-0273-58d8-9726-07b9147dba7d</onsuccess></stage>
+<stage stageid="b6b2c5c6-0273-58d8-9726-07b9147dba7d" name="Mover Archivo" type="Code"><subsheetid>11bc42d8-2633-5c3e-92e5-001c84c655c8</subsheetid><narrative>Mueve el archivo procesado a otra carpeta agregando fecha y hora al nombre.</narrative><loginhibit /><display x="15" y="-15" w="90" h="45" /><inputs><input type="text" name="Origen" expr="[Origen]" /><input type="text" name="CarpetaDestino" expr="[CarpetaDestino]" /></inputs><outputs><output type="text" name="NuevaRuta" stage="NuevaRuta" /></outputs><onsuccess>a3a57296-0f20-5705-beb0-c3b3f256e9b7</onsuccess><code><![CDATA[
+if (!System.IO.Directory.Exists(CarpetaDestino)) System.IO.Directory.CreateDirectory(CarpetaDestino);
+string nombre = System.IO.Path.GetFileNameWithoutExtension(Origen) + "_" + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + System.IO.Path.GetExtension(Origen);
+NuevaRuta = System.IO.Path.Combine(CarpetaDestino, nombre);
+System.IO.File.Move(Origen, NuevaRuta);
+]]></code></stage>
+<stage stageid="a3a57296-0f20-5705-beb0-c3b3f256e9b7" name="End" type="End"><subsheetid>11bc42d8-2633-5c3e-92e5-001c84c655c8</subsheetid><loginhibit /><display x="15" y="90" w="60" h="30" /><outputs><output type="text" name="NuevaRuta" narrative="" stage="NuevaRuta" /></outputs></stage>
+<stage stageid="26ec9b69-3576-5cb2-bb0f-24a36141ed01" name="Origen" type="Data"><subsheetid>11bc42d8-2633-5c3e-92e5-001c84c655c8</subsheetid><narrative></narrative><display x="180" y="-105" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="bd7fcd16-1956-5825-aaa2-9976cd579cfa" name="CarpetaDestino" type="Data"><subsheetid>11bc42d8-2633-5c3e-92e5-001c84c655c8</subsheetid><narrative></narrative><display x="180" y="-65" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="d41fe654-32f6-5c2b-ac50-843566d64f19" name="NuevaRuta" type="Data"><subsheetid>11bc42d8-2633-5c3e-92e5-001c84c655c8</subsheetid><narrative></narrative><display x="300" y="-105" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="62ff9115-f7f7-5539-a0f5-eaa5d2f972b1" name="Descripcion" type="Note"><subsheetid>11bc42d8-2633-5c3e-92e5-001c84c655c8</subsheetid><narrative>Mueve el archivo procesado a otra carpeta agregando fecha y hora al nombre.</narrative><display x="-180" y="-105" w="180" h="60" /></stage>
+<stage stageid="c7ddde53-8dc4-51b6-91f6-608f36d0284e" name="Start" type="Start"><subsheetid>3751451c-fcf9-5027-ad8e-c1fdf24958b1</subsheetid><loginhibit /><display x="15" y="-105" w="60" h="30" /><inputs><input type="text" name="UrlBase" narrative="" stage="UrlBase" /><input type="text" name="Token" narrative="" stage="Token" /><input type="text" name="Mensaje" narrative="" stage="Mensaje" /><input type="number" name="Archivos" narrative="Archivos en la corrida" stage="Archivos" /></inputs><onsuccess>7b2d0afc-02b8-5432-8b60-a70d2e9d9b6f</onsuccess></stage>
+<stage stageid="7b2d0afc-02b8-5432-8b60-a70d2e9d9b6f" name="Latido" type="Code"><subsheetid>3751451c-fcf9-5027-ad8e-c1fdf24958b1</subsheetid><narrative>Informa a la plataforma el estado del robot (se muestra en el panel).</narrative><loginhibit /><display x="15" y="-15" w="90" h="45" /><inputs><input type="text" name="UrlBase" expr="[UrlBase]" /><input type="text" name="Token" expr="[Token]" /><input type="text" name="Mensaje" expr="[Mensaje]" /><input type="number" name="Archivos" expr="[Archivos]" /></inputs><outputs><output type="flag" name="Exito" stage="Exito" /></outputs><onsuccess>60d7a3e1-c977-5e7c-9f2c-01013769c08c</onsuccess><code><![CDATA[
+int status;
+string body = "{\"mensaje\":\"" + JsonEsc(Mensaje) + "\",\"maquina\":\"" + JsonEsc(System.Environment.MachineName) + "\",\"ejecucion\":{\"archivos\":" + System.Convert.ToString(Archivos, System.Globalization.CultureInfo.InvariantCulture) + "}}";
+Http("POST", UrlUnir(UrlBase, "/api/bot/heartbeat"), Token, body, out status);
+Exito = status == 200;
+]]></code></stage>
+<stage stageid="60d7a3e1-c977-5e7c-9f2c-01013769c08c" name="End" type="End"><subsheetid>3751451c-fcf9-5027-ad8e-c1fdf24958b1</subsheetid><loginhibit /><display x="15" y="90" w="60" h="30" /><outputs><output type="flag" name="Exito" narrative="" stage="Exito" /></outputs></stage>
+<stage stageid="b15ac111-25bf-5e5c-90c5-0bd055a4a1ed" name="UrlBase" type="Data"><subsheetid>3751451c-fcf9-5027-ad8e-c1fdf24958b1</subsheetid><narrative></narrative><display x="180" y="-105" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="741395c7-dbc6-5081-98bd-2d9e82fa0e33" name="Token" type="Data"><subsheetid>3751451c-fcf9-5027-ad8e-c1fdf24958b1</subsheetid><narrative></narrative><display x="180" y="-65" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="24b4a35f-bcf7-52b2-9bab-4a5c9551289d" name="Mensaje" type="Data"><subsheetid>3751451c-fcf9-5027-ad8e-c1fdf24958b1</subsheetid><narrative></narrative><display x="180" y="-25" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="67d12386-d85e-5442-867d-bc39157dbf0b" name="Archivos" type="Data"><subsheetid>3751451c-fcf9-5027-ad8e-c1fdf24958b1</subsheetid><narrative>Archivos en la corrida</narrative><display x="180" y="15" w="90" h="30" /><datatype>number</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="ed4771e8-8c5e-5e1a-9ba9-7bb62ad2ce16" name="Exito" type="Data"><subsheetid>3751451c-fcf9-5027-ad8e-c1fdf24958b1</subsheetid><narrative></narrative><display x="300" y="-105" w="90" h="30" /><datatype>flag</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="7311cea8-9c47-5592-b507-3b324872e488" name="Descripcion" type="Note"><subsheetid>3751451c-fcf9-5027-ad8e-c1fdf24958b1</subsheetid><narrative>Informa a la plataforma el estado del robot (se muestra en el panel).</narrative><display x="-180" y="-105" w="180" h="60" /></stage>
+<stage stageid="5d790d90-bf66-50b9-b1d9-6d5ae7cd9a76" name="Start" type="Start"><subsheetid>1ae1d30d-fb52-53b8-b040-31dbe65344ff</subsheetid><loginhibit /><display x="15" y="-105" w="60" h="30" /><inputs><input type="text" name="UrlBase" narrative="" stage="UrlBase" /><input type="text" name="Token" narrative="" stage="Token" /></inputs><onsuccess>f1d65719-b3c0-5159-a454-7760d416e499</onsuccess></stage>
+<stage stageid="f1d65719-b3c0-5159-a454-7760d416e499" name="Obtener Institutos" type="Code"><subsheetid>1ae1d30d-fb52-53b8-b040-31dbe65344ff</subsheetid><narrative>Lista los institutos con planificación activa (para distribuir reportes).</narrative><loginhibit /><display x="15" y="-15" w="90" h="45" /><inputs><input type="text" name="UrlBase" expr="[UrlBase]" /><input type="text" name="Token" expr="[Token]" /></inputs><outputs><output type="collection" name="Institutos" stage="Institutos" /></outputs><onsuccess>929931a7-370b-5162-a618-18f106504efa</onsuccess><code><![CDATA[
+int status;
+string resp = Http("GET", UrlUnir(UrlBase, "/api/bot/institutos"), Token, null, out status);
+Institutos = new DataTable("Institutos");
+Institutos.Columns.Add("IT", typeof(decimal));
+Institutos.Columns.Add("Codigo", typeof(string));
+Institutos.Columns.Add("Nombre", typeof(string));
+foreach (System.Text.RegularExpressions.Match m in System.Text.RegularExpressions.Regex.Matches(resp, "\\{[^{}]*\\}"))
+{
+    string o = m.Value;
+    decimal it;
+    if (decimal.TryParse(JsonCampo(o, "IT"), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out it))
+        Institutos.Rows.Add(it, JsonCampo(o, "Codigo"), JsonCampo(o, "Nombre"));
+}
+]]></code></stage>
+<stage stageid="929931a7-370b-5162-a618-18f106504efa" name="End" type="End"><subsheetid>1ae1d30d-fb52-53b8-b040-31dbe65344ff</subsheetid><loginhibit /><display x="15" y="90" w="60" h="30" /><outputs><output type="collection" name="Institutos" narrative="IT, Codigo, Nombre" stage="Institutos" /></outputs></stage>
+<stage stageid="24f1ab8e-5ca8-5326-a0d2-f69b12939be6" name="UrlBase" type="Data"><subsheetid>1ae1d30d-fb52-53b8-b040-31dbe65344ff</subsheetid><narrative></narrative><display x="180" y="-105" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="7a9af377-9d8f-5e69-97a9-b8d24065511b" name="Token" type="Data"><subsheetid>1ae1d30d-fb52-53b8-b040-31dbe65344ff</subsheetid><narrative></narrative><display x="180" y="-65" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="44a62a86-8342-5a81-8c22-18e924aba41d" name="Institutos" type="Collection"><subsheetid>1ae1d30d-fb52-53b8-b040-31dbe65344ff</subsheetid><narrative>IT, Codigo, Nombre</narrative><display x="300" y="-105" w="90" h="30" /><datatype>collection</datatype><private /><alwaysinit /><collectioninfo><field name="IT" type="number" /><field name="Codigo" type="text" /><field name="Nombre" type="text" /></collectioninfo></stage>
+<stage stageid="c43e915a-f478-5874-ac43-d093a8a51b96" name="Descripcion" type="Note"><subsheetid>1ae1d30d-fb52-53b8-b040-31dbe65344ff</subsheetid><narrative>Lista los institutos con planificación activa (para distribuir reportes).</narrative><display x="-180" y="-105" w="180" h="60" /></stage>
+<stage stageid="30bec8de-ae95-5f02-8c61-2d7f84412cc4" name="Start" type="Start"><subsheetid>aaf9f03f-f892-57b9-bd89-d5c1f45e6532</subsheetid><loginhibit /><display x="15" y="-105" w="60" h="30" /><inputs><input type="text" name="Url" narrative="URL completa" stage="Url" /><input type="text" name="Token" narrative="" stage="Token" /><input type="text" name="Ruta" narrative="Dónde guardarlo" stage="Ruta" /></inputs><onsuccess>36f77293-b2fa-5cba-90d8-8ebb8d4516b5</onsuccess></stage>
+<stage stageid="36f77293-b2fa-5cba-90d8-8ebb8d4516b5" name="Descargar Archivo" type="Code"><subsheetid>aaf9f03f-f892-57b9-bd89-d5c1f45e6532</subsheetid><narrative>Descarga un archivo autenticado (ej. PDF de un instituto) y lo guarda en disco.</narrative><loginhibit /><display x="15" y="-15" w="90" h="45" /><inputs><input type="text" name="Url" expr="[Url]" /><input type="text" name="Token" expr="[Token]" /><input type="text" name="Ruta" expr="[Ruta]" /></inputs><outputs><output type="flag" name="Exito" stage="Exito" /><output type="number" name="Bytes" stage="Bytes" /></outputs><onsuccess>c14db802-e805-5003-96c8-60b83ea20c4f</onsuccess><code><![CDATA[
+System.Net.ServicePointManager.SecurityProtocol = (System.Net.SecurityProtocolType)3072;
+string dir = System.IO.Path.GetDirectoryName(Ruta);
+if (!string.IsNullOrEmpty(dir) && !System.IO.Directory.Exists(dir)) System.IO.Directory.CreateDirectory(dir);
+using (var wc = new System.Net.WebClient())
+{
+    wc.Headers["Authorization"] = "Bearer " + Token;
+    wc.DownloadFile(Url, Ruta);
+}
+var fi = new System.IO.FileInfo(Ruta);
+Bytes = fi.Length;
+Exito = fi.Length > 0;
+]]></code></stage>
+<stage stageid="c14db802-e805-5003-96c8-60b83ea20c4f" name="End" type="End"><subsheetid>aaf9f03f-f892-57b9-bd89-d5c1f45e6532</subsheetid><loginhibit /><display x="15" y="90" w="60" h="30" /><outputs><output type="flag" name="Exito" narrative="" stage="Exito" /><output type="number" name="Bytes" narrative="" stage="Bytes" /></outputs></stage>
+<stage stageid="f05cbc4a-eb7e-5a83-b3cd-8011e16ff257" name="Url" type="Data"><subsheetid>aaf9f03f-f892-57b9-bd89-d5c1f45e6532</subsheetid><narrative>URL completa</narrative><display x="180" y="-105" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="163611b7-76cf-5f96-b350-54d6db8239f5" name="Token" type="Data"><subsheetid>aaf9f03f-f892-57b9-bd89-d5c1f45e6532</subsheetid><narrative></narrative><display x="180" y="-65" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="c66c1ac0-8cde-5b74-b143-e9dc99e35a4e" name="Ruta" type="Data"><subsheetid>aaf9f03f-f892-57b9-bd89-d5c1f45e6532</subsheetid><narrative>Dónde guardarlo</narrative><display x="180" y="-25" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="1a83bfbe-64fc-52ce-b5d3-1b13796e6ad1" name="Exito" type="Data"><subsheetid>aaf9f03f-f892-57b9-bd89-d5c1f45e6532</subsheetid><narrative></narrative><display x="300" y="-105" w="90" h="30" /><datatype>flag</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="f655e353-06ae-5a4a-b399-bea145457d80" name="Bytes" type="Data"><subsheetid>aaf9f03f-f892-57b9-bd89-d5c1f45e6532</subsheetid><narrative></narrative><display x="300" y="-65" w="90" h="30" /><datatype>number</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="70b0792e-263a-53f1-8670-9a334ef2d8d9" name="Descripcion" type="Note"><subsheetid>aaf9f03f-f892-57b9-bd89-d5c1f45e6532</subsheetid><narrative>Descarga un archivo autenticado (ej. PDF de un instituto) y lo guarda en disco.</narrative><display x="-180" y="-105" w="180" h="60" /></stage>
+</process>
+</object>
+<process id="3f165f0b-5395-5b88-94d7-72b32971fbf1" name="Teleton - Ingesta BUK SIC" xmlns="http://www.blueprism.co.uk/product/process">
+<process xmlns="http://www.blueprism.co.uk/product/process" name="Teleton - Ingesta BUK SIC" version="1.0" bpversion="6.10.1.12345" narrative="Automatiza la incorporación de reportes BUK y SIC a la planificación asistencial y distribuye los reportes por instituto." byrefcollection="true">
+<view><camerax>0</camerax><cameray>0</cameray><zoom version="2">1.25</zoom></view>
+<preconditions />
+<endpoint narrative="" />
+<subsheet subsheetid="9e0b1a88-acc3-54d9-aa39-88bcbebd5d0c" type="Normal" published="False"><name>Procesar Archivo</name><view><camerax>0</camerax><cameray>0</cameray><zoom version="2">1.25</zoom></view></subsheet>
+<subsheet subsheetid="888fbe95-c2ad-57ff-b99e-dcfc146971e9" type="Normal" published="False"><name>Distribuir Reportes</name><view><camerax>0</camerax><cameray>0</cameray><zoom version="2">1.25</zoom></view></subsheet>
+<stage stageid="3fd0c41c-dc89-592e-9047-9587156afd9f" name="Start" type="Start"><loginhibit /><display x="15" y="-255" w="60" h="30" /><onsuccess>79d709d3-1655-5bbd-813f-42efc63415e4</onsuccess></stage>
+<stage stageid="79d709d3-1655-5bbd-813f-42efc63415e4" name="Login plataforma" type="Action"><narrative>Obtiene un token JWT con la cuenta técnica del robot (rol bot).</narrative><loginhibit onsuccess="true" /><display x="15" y="-195" w="90" h="30" /><inputs><input type="text" name="UrlBase" expr="[URL API]" /><input type="text" name="Email" expr="[Email Robot]" /><input type="text" name="Password" expr="[Password Robot]" /></inputs><outputs><output type="text" name="Token" stage="Token" /><output type="flag" name="Exito" stage="Login OK" /><output type="text" name="Mensaje" stage="Mensaje" /></outputs><onsuccess>f772df9a-b8b6-579a-b205-9a60f109d5b5</onsuccess><resource object="Teleton - API Conector" action="Login" /></stage>
+<stage stageid="f772df9a-b8b6-579a-b205-9a60f109d5b5" name="¿Login OK?" type="Decision"><display x="15" y="-135" w="90" h="45" /><decision expression="[Login OK]" /><ontrue>879afd54-cd01-5d48-957d-79bef52296bd</ontrue><onfalse>95c282f9-10cd-5d24-9893-771f26a705af</onfalse></stage>
+<stage stageid="95c282f9-10cd-5d24-9893-771f26a705af" name="Error de login" type="Exception"><loginhibit /><display x="150" y="-135" w="90" h="30" /><exception type="System Exception" detail='"No se pudo autenticar en la plataforma: " &amp; [Mensaje]' /></stage>
+<stage stageid="879afd54-cd01-5d48-957d-79bef52296bd" name="Latido inicio" type="Action"><narrative></narrative><loginhibit onsuccess="true" /><display x="15" y="-75" w="90" h="30" /><inputs><input type="text" name="UrlBase" expr="[URL API]" /><input type="text" name="Token" expr="[Token]" /><input type="text" name="Mensaje" expr='"Robot iniciado: revisando carpeta de reportes"' /><input type="number" name="Archivos" expr="0" /></inputs><outputs></outputs><onsuccess>05001826-b41a-5a33-b590-fe6d3da96159</onsuccess><resource object="Teleton - API Conector" action="Latido" /></stage>
+<stage stageid="05001826-b41a-5a33-b590-fe6d3da96159" name="Listar reportes pendientes" type="Action"><narrative></narrative><loginhibit onsuccess="true" /><display x="15" y="-15" w="90" h="30" /><inputs><input type="text" name="Carpeta" expr="[Carpeta Entrada]" /><input type="text" name="Patron" expr='"*.xlsx"' /></inputs><outputs><output type="collection" name="Archivos" stage="Archivos" /><output type="number" name="Cantidad" stage="Cantidad Archivos" /></outputs><onsuccess>dd944d5b-f812-5d7f-adfb-938182d7a86d</onsuccess><resource object="Teleton - API Conector" action="Listar Archivos" /></stage>
+<stage stageid="dd944d5b-f812-5d7f-adfb-938182d7a86d" name="¿Hay archivos?" type="Decision"><display x="15" y="45" w="90" h="45" /><decision expression="[Cantidad Archivos] &gt; 0" /><ontrue>bc90ba40-c0d7-561f-899b-733b5ead3d55</ontrue><onfalse>a2067158-4026-597b-adf5-53bf477b376d</onfalse></stage>
+<stage stageid="a2067158-4026-597b-adf5-53bf477b376d" name="Latido sin archivos" type="Action"><narrative></narrative><loginhibit onsuccess="true" /><display x="165" y="45" w="90" h="30" /><inputs><input type="text" name="UrlBase" expr="[URL API]" /><input type="text" name="Token" expr="[Token]" /><input type="text" name="Mensaje" expr='"Sin reportes nuevos en la carpeta de entrada"' /><input type="number" name="Archivos" expr="0" /></inputs><outputs></outputs><onsuccess>38aaaa7d-176a-5b0a-97a8-01bcbf054184</onsuccess><resource object="Teleton - API Conector" action="Latido" /></stage>
+<stage stageid="bc90ba40-c0d7-561f-899b-733b5ead3d55" name="Por cada archivo" type="LoopStart"><loginhibit /><display x="15" y="105" w="90" h="30" /><onsuccess>c3807234-9f6e-5f72-a618-ea1dce2432f0</onsuccess><groupid>350f2c04-912e-5b92-afb5-f10b90f2806c</groupid><looptype>ForEach</looptype><loopdata>Archivos</loopdata></stage>
+<stage stageid="c3807234-9f6e-5f72-a618-ea1dce2432f0" name="Procesar Archivo" type="SubSheet"><loginhibit onsuccess="true" /><display x="15" y="165" w="90" h="30" /><inputs><input type="text" name="Ruta" expr="[Archivos.Ruta]" /><input type="text" name="Nombre" expr="[Archivos.Nombre]" /><input type="text" name="Tipo" expr="[Archivos.Tipo]" /></inputs><outputs /><onsuccess>943307bb-3a1e-541f-b564-a28b8f898c2c</onsuccess><processid>9e0b1a88-acc3-54d9-aa39-88bcbebd5d0c</processid></stage>
+<stage stageid="943307bb-3a1e-541f-b564-a28b8f898c2c" name="Por cada archivo" type="LoopEnd"><loginhibit /><display x="15" y="225" w="90" h="30" /><onsuccess>4d54fa95-d979-5962-a60d-10160cb5746d</onsuccess><groupid>350f2c04-912e-5b92-afb5-f10b90f2806c</groupid></stage>
+<stage stageid="4d54fa95-d979-5962-a60d-10160cb5746d" name="Distribuir Reportes" type="SubSheet"><loginhibit onsuccess="true" /><display x="15" y="285" w="90" h="30" /><inputs /><outputs /><onsuccess>6e2963d1-68a8-5cdb-a5c9-7b472ae64a67</onsuccess><processid>888fbe95-c2ad-57ff-b99e-dcfc146971e9</processid></stage>
+<stage stageid="6e2963d1-68a8-5cdb-a5c9-7b472ae64a67" name="Latido fin" type="Action"><narrative></narrative><loginhibit onsuccess="true" /><display x="15" y="345" w="90" h="30" /><inputs><input type="text" name="UrlBase" expr="[URL API]" /><input type="text" name="Token" expr="[Token]" /><input type="text" name="Mensaje" expr='"Ejecución finalizada: " &amp; [Cantidad Archivos] &amp; " reporte(s) procesado(s) y PDFs distribuidos"' /><input type="number" name="Archivos" expr="[Cantidad Archivos]" /></inputs><outputs></outputs><onsuccess>38aaaa7d-176a-5b0a-97a8-01bcbf054184</onsuccess><resource object="Teleton - API Conector" action="Latido" /></stage>
+<stage stageid="38aaaa7d-176a-5b0a-97a8-01bcbf054184" name="End" type="End"><loginhibit /><display x="15" y="405" w="60" h="30" /></stage>
+<stage stageid="434eda6d-80ed-5e13-ae08-8fc66ef0694c" name="Proceso" type="ProcessInfo"><display x="-195" y="-255" w="150" h="90" /></stage>
+<stage stageid="d080196f-9715-5948-9c89-71a332117c59" name="Configuracion" type="Note"><narrative>CONFIGURACIÓN: edita los valores iniciales de estos datos antes de ejecutar (URL de la plataforma y carpetas).</narrative><display x="330" y="-275" w="230" h="40" /></stage>
+<stage stageid="d7a618f1-abfd-5317-b66e-c86d978a0b81" name="URL API" type="Data"><narrative>URL de la plataforma (Render o local), sin / final</narrative><display x="330" y="-215" w="90" h="30" /><datatype>text</datatype><initialvalue xml:space="preserve">http://localhost:3000</initialvalue><alwaysinit /></stage>
+<stage stageid="8e6df28b-e6ad-561a-8031-df238140ff6a" name="Email Robot" type="Data"><narrative>Cuenta técnica con rol bot</narrative><display x="450" y="-215" w="90" h="30" /><datatype>text</datatype><initialvalue xml:space="preserve">bot@teleton.cl</initialvalue><alwaysinit /></stage>
+<stage stageid="cd15e58f-710d-58ee-8194-ad75ba6a079d" name="Password Robot" type="Data"><narrative>Contraseña (en producción usar Credential Manager)</narrative><display x="330" y="-165" w="90" h="30" /><datatype>text</datatype><initialvalue xml:space="preserve">Teleton2026</initialvalue><alwaysinit /></stage>
+<stage stageid="e284673e-f372-597b-b8f4-4368801d884c" name="Carpeta Entrada" type="Data"><narrative>Aquí GP deja los reportes BUK y SIC</narrative><display x="450" y="-165" w="90" h="30" /><datatype>text</datatype><initialvalue xml:space="preserve">C:\Teleton\Entrada</initialvalue><alwaysinit /></stage>
+<stage stageid="019730fc-6fe5-5af3-8888-f443a06f948e" name="Carpeta Procesados" type="Data"><narrative></narrative><display x="330" y="-115" w="90" h="30" /><datatype>text</datatype><initialvalue xml:space="preserve">C:\Teleton\Procesados</initialvalue><alwaysinit /></stage>
+<stage stageid="7c94d254-57fd-5ddc-86fb-29bcea2dad39" name="Carpeta Errores" type="Data"><narrative>CSV con filas rechazadas y archivos con fallas</narrative><display x="450" y="-115" w="90" h="30" /><datatype>text</datatype><initialvalue xml:space="preserve">C:\Teleton\Errores</initialvalue><alwaysinit /></stage>
+<stage stageid="c0877118-cae4-5a85-861e-b3ca48c0d22e" name="Carpeta Reportes" type="Data"><narrative>PDF por instituto para jefaturas</narrative><display x="330" y="-65" w="90" h="30" /><datatype>text</datatype><initialvalue xml:space="preserve">C:\Teleton\Reportes</initialvalue><alwaysinit /></stage>
+<stage stageid="7b5cdf70-53fd-55e3-bd49-080fce8ed1aa" name="Token" type="Data"><narrative></narrative><display x="330" y="-5" w="90" h="30" /><datatype>text</datatype><initialvalue /><alwaysinit /></stage>
+<stage stageid="b39c2b8f-27e9-5d37-80fd-47ddd2486bfd" name="Login OK" type="Data"><narrative></narrative><display x="450" y="-5" w="90" h="30" /><datatype>flag</datatype><initialvalue xml:space="preserve">False</initialvalue><private /><alwaysinit /></stage>
+<stage stageid="43cbafca-ec11-554e-ad55-f38055271bb6" name="Mensaje" type="Data"><narrative></narrative><display x="330" y="45" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="867d41cb-e968-5b9a-8eb6-1f49b817f857" name="Cantidad Archivos" type="Data"><narrative></narrative><display x="450" y="45" w="90" h="30" /><datatype>number</datatype><initialvalue xml:space="preserve">0</initialvalue><alwaysinit /></stage>
+<stage stageid="a30bdd14-77d7-5b12-885d-e8d77777b82a" name="Archivos" type="Collection"><narrative></narrative><display x="390" y="105" w="90" h="30" /><datatype>collection</datatype><private /><alwaysinit /><collectioninfo><field name="Nombre" type="text" /><field name="Ruta" type="text" /><field name="Tipo" type="text" /></collectioninfo></stage>
+<stage stageid="194a0936-24d4-5bc9-bd37-9eb38eed111f" name="Flujo" type="Note"><narrative>Robot "Cada hora cuenta": 1) inicia sesión en la plataforma, 2) toma cada Excel de BUK/SIC de la carpeta de entrada, 3) lo lee y valida fila a fila, 4) envía sólo lo válido y deja un CSV de errores, 5) mueve el archivo a Procesados, 6) descarga el PDF de planificación de cada instituto para sus jefaturas.</narrative><display x="-240" y="0" w="210" h="150" /></stage>
+<stage stageid="541221cf-51d3-5098-976b-6ac4a58c4080" name="Start" type="Start"><subsheetid>9e0b1a88-acc3-54d9-aa39-88bcbebd5d0c</subsheetid><loginhibit /><display x="15" y="-255" w="60" h="30" /><inputs><input type="text" name="Ruta" stage="Ruta" /><input type="text" name="Nombre" stage="Nombre" /><input type="text" name="Tipo" stage="Tipo" /></inputs><onsuccess>ab7bb01c-054c-5bca-947b-0289fd69381a</onsuccess></stage>
+<stage stageid="ab7bb01c-054c-5bca-947b-0289fd69381a" name="¿Tipo reconocido?" type="Decision"><subsheetid>9e0b1a88-acc3-54d9-aa39-88bcbebd5d0c</subsheetid><display x="15" y="-195" w="90" h="45" /><decision expression='[Tipo] &lt;&gt; "DESCONOCIDO"' /><ontrue>be705a8f-363d-58e9-aa6a-a5bfe6156e13</ontrue><onfalse>4d311b41-8a37-5ce5-bd0b-22f9f1f544cb</onfalse></stage>
+<stage stageid="4d311b41-8a37-5ce5-bd0b-22f9f1f544cb" name="Archivo no reconocido a Errores" type="Action"><subsheetid>9e0b1a88-acc3-54d9-aa39-88bcbebd5d0c</subsheetid><narrative></narrative><loginhibit onsuccess="true" /><display x="165" y="-195" w="90" h="30" /><inputs><input type="text" name="Origen" expr="[Ruta]" /><input type="text" name="CarpetaDestino" expr="[Carpeta Errores]" /></inputs><outputs><output type="text" name="NuevaRuta" stage="Nueva Ruta" /></outputs><onsuccess>ecbfcad3-0f4f-579d-9ef4-35605c02da97</onsuccess><resource object="Teleton - API Conector" action="Mover Archivo" /></stage>
+<stage stageid="be705a8f-363d-58e9-aa6a-a5bfe6156e13" name="Leer Excel" type="Action"><subsheetid>9e0b1a88-acc3-54d9-aa39-88bcbebd5d0c</subsheetid><narrative></narrative><loginhibit onsuccess="true" /><display x="15" y="-135" w="90" h="30" /><inputs><input type="text" name="Ruta" expr="[Ruta]" /></inputs><outputs><output type="collection" name="Datos" stage="Datos" /><output type="number" name="Filas" stage="Filas" /><output type="text" name="Hoja" stage="Hoja" /></outputs><onsuccess>18ba75a3-76e6-5feb-b8af-c4e335c4561e</onsuccess><resource object="Teleton - API Conector" action="Leer Excel" /></stage>
+<stage stageid="18ba75a3-76e6-5feb-b8af-c4e335c4561e" name="¿Es SIC?" type="Decision"><subsheetid>9e0b1a88-acc3-54d9-aa39-88bcbebd5d0c</subsheetid><display x="15" y="-75" w="90" h="45" /><decision expression='[Tipo] = "SIC"' /><ontrue>873e7b83-3340-5e46-b7b0-7594b90bc2c3</ontrue><onfalse>8cc1659c-50e4-55a1-b126-ca5bf4506d3e</onfalse></stage>
+<stage stageid="873e7b83-3340-5e46-b7b0-7594b90bc2c3" name="Validar SIC" type="Action"><subsheetid>9e0b1a88-acc3-54d9-aa39-88bcbebd5d0c</subsheetid><narrative></narrative><loginhibit onsuccess="true" /><display x="165" y="-75" w="90" h="30" /><inputs><input type="collection" name="Datos" expr="[Datos]" /></inputs><outputs><output type="collection" name="Validos" stage="Validos" /><output type="collection" name="Errores" stage="Errores" /><output type="number" name="CantValidos" stage="Cant Validos" /><output type="number" name="CantErrores" stage="Cant Errores" /></outputs><onsuccess>5e219acf-a39e-5c59-ad5a-890afdfcb5f0</onsuccess><resource object="Teleton - API Conector" action="Validar Reporte SIC" /></stage>
+<stage stageid="8cc1659c-50e4-55a1-b126-ca5bf4506d3e" name="Validar BUK" type="Action"><subsheetid>9e0b1a88-acc3-54d9-aa39-88bcbebd5d0c</subsheetid><narrative></narrative><loginhibit onsuccess="true" /><display x="-135" y="-75" w="90" h="30" /><inputs><input type="collection" name="Datos" expr="[Datos]" /><input type="number" name="JornadaMaxEneAbr" expr="44" /><input type="number" name="JornadaMaxMayDic" expr="42" /></inputs><outputs><output type="collection" name="Validos" stage="Validos" /><output type="collection" name="Errores" stage="Errores" /><output type="number" name="CantValidos" stage="Cant Validos" /><output type="number" name="CantErrores" stage="Cant Errores" /></outputs><onsuccess>5e219acf-a39e-5c59-ad5a-890afdfcb5f0</onsuccess><resource object="Teleton - API Conector" action="Validar Reporte BUK" /></stage>
+<stage stageid="5e219acf-a39e-5c59-ad5a-890afdfcb5f0" name="¿Hay errores?" type="Decision"><subsheetid>9e0b1a88-acc3-54d9-aa39-88bcbebd5d0c</subsheetid><display x="15" y="-15" w="90" h="45" /><decision expression="[Cant Errores] &gt; 0" /><ontrue>a48ec89c-b3ce-59e9-b60f-0463c91a7c94</ontrue><onfalse>7d14d7c3-03df-5133-91f7-206cc4b687f7</onfalse></stage>
+<stage stageid="a48ec89c-b3ce-59e9-b60f-0463c91a7c94" name="Ruta CSV errores" type="Calculation"><subsheetid>9e0b1a88-acc3-54d9-aa39-88bcbebd5d0c</subsheetid><loginhibit onsuccess="true" /><display x="165" y="-15" w="90" h="30" /><onsuccess>a66c9a9c-a610-594f-9126-1e07a700373b</onsuccess><calculation expression='[Carpeta Errores] &amp; "\" &amp; Replace([Nombre], ".xlsx", "") &amp; "_errores_" &amp; FormatDateTime(Now(), "yyyyMMdd_HHmmss") &amp; ".csv"' stage="Ruta CSV" /></stage>
+<stage stageid="a66c9a9c-a610-594f-9126-1e07a700373b" name="Guardar CSV de errores" type="Action"><subsheetid>9e0b1a88-acc3-54d9-aa39-88bcbebd5d0c</subsheetid><narrative></narrative><loginhibit onsuccess="true" /><display x="165" y="45" w="90" h="30" /><inputs><input type="collection" name="Errores" expr="[Errores]" /><input type="text" name="Ruta" expr="[Ruta CSV]" /></inputs><outputs></outputs><onsuccess>7d14d7c3-03df-5133-91f7-206cc4b687f7</onsuccess><resource object="Teleton - API Conector" action="Guardar Errores CSV" /></stage>
+<stage stageid="7d14d7c3-03df-5133-91f7-206cc4b687f7" name="Enviar a plataforma" type="Action"><subsheetid>9e0b1a88-acc3-54d9-aa39-88bcbebd5d0c</subsheetid><narrative></narrative><loginhibit onsuccess="true" /><display x="15" y="105" w="90" h="30" /><inputs><input type="text" name="UrlBase" expr="[URL API]" /><input type="text" name="Token" expr="[Token]" /><input type="text" name="Tipo" expr="[Tipo]" /><input type="text" name="Archivo" expr="[Nombre]" /><input type="collection" name="Validos" expr="[Validos]" /><input type="collection" name="Errores" expr="[Errores]" /></inputs><outputs><output type="flag" name="Exito" stage="Envio OK" /><output type="number" name="IngestaId" stage="Ingesta Id" /><output type="number" name="Cambios" stage="Cambios" /><output type="text" name="Mensaje" stage="Respuesta Mensaje" /><output type="text" name="Respuesta" stage="Respuesta" /></outputs><onsuccess>a256b445-4f8c-518d-81a1-fab34441bba4</onsuccess><resource object="Teleton - API Conector" action="Enviar Ingesta" /></stage>
+<stage stageid="a256b445-4f8c-518d-81a1-fab34441bba4" name="¿Envío OK?" type="Decision"><subsheetid>9e0b1a88-acc3-54d9-aa39-88bcbebd5d0c</subsheetid><display x="15" y="165" w="90" h="45" /><decision expression="[Envio OK]" /><ontrue>cf431ee8-4395-542d-91db-ca98a9663171</ontrue><onfalse>5792b8c2-c79d-5eb5-ab4c-6712804d3c08</onfalse></stage>
+<stage stageid="cf431ee8-4395-542d-91db-ca98a9663171" name="Mover a Procesados" type="Action"><subsheetid>9e0b1a88-acc3-54d9-aa39-88bcbebd5d0c</subsheetid><narrative></narrative><loginhibit onsuccess="true" /><display x="15" y="225" w="90" h="30" /><inputs><input type="text" name="Origen" expr="[Ruta]" /><input type="text" name="CarpetaDestino" expr="[Carpeta Procesados]" /></inputs><outputs><output type="text" name="NuevaRuta" stage="Nueva Ruta" /></outputs><onsuccess>897a8410-5ccc-5954-9e36-4e3271a8827f</onsuccess><resource object="Teleton - API Conector" action="Mover Archivo" /></stage>
+<stage stageid="5792b8c2-c79d-5eb5-ab4c-6712804d3c08" name="Mover a Errores" type="Action"><subsheetid>9e0b1a88-acc3-54d9-aa39-88bcbebd5d0c</subsheetid><narrative></narrative><loginhibit onsuccess="true" /><display x="165" y="225" w="90" h="30" /><inputs><input type="text" name="Origen" expr="[Ruta]" /><input type="text" name="CarpetaDestino" expr="[Carpeta Errores]" /></inputs><outputs><output type="text" name="NuevaRuta" stage="Nueva Ruta" /></outputs><onsuccess>897a8410-5ccc-5954-9e36-4e3271a8827f</onsuccess><resource object="Teleton - API Conector" action="Mover Archivo" /></stage>
+<stage stageid="897a8410-5ccc-5954-9e36-4e3271a8827f" name="Informar resultado" type="Action"><subsheetid>9e0b1a88-acc3-54d9-aa39-88bcbebd5d0c</subsheetid><narrative></narrative><loginhibit onsuccess="true" /><display x="15" y="285" w="90" h="30" /><inputs><input type="text" name="UrlBase" expr="[URL API]" /><input type="text" name="Token" expr="[Token]" /><input type="text" name="Mensaje" expr='[Nombre] &amp; ": " &amp; [Respuesta Mensaje]' /><input type="number" name="Archivos" expr="[Cantidad Archivos]" /></inputs><outputs></outputs><onsuccess>ecbfcad3-0f4f-579d-9ef4-35605c02da97</onsuccess><resource object="Teleton - API Conector" action="Latido" /></stage>
+<stage stageid="ecbfcad3-0f4f-579d-9ef4-35605c02da97" name="End" type="End"><subsheetid>9e0b1a88-acc3-54d9-aa39-88bcbebd5d0c</subsheetid><loginhibit /><display x="15" y="345" w="60" h="30" /></stage>
+<stage stageid="68307a21-4e4a-5131-bcf9-b4264586e651" name="Recover" type="Recover"><subsheetid>9e0b1a88-acc3-54d9-aa39-88bcbebd5d0c</subsheetid><display x="330" y="105" w="60" h="30" /><onsuccess>ef7d4f2a-ade3-5be7-8ae0-e8166b5d0441</onsuccess></stage>
+<stage stageid="ef7d4f2a-ade3-5be7-8ae0-e8166b5d0441" name="Detalle excepción" type="Calculation"><subsheetid>9e0b1a88-acc3-54d9-aa39-88bcbebd5d0c</subsheetid><loginhibit onsuccess="true" /><display x="330" y="165" w="90" h="30" /><onsuccess>9a26b741-5bc0-5737-b03f-55e225fd7068</onsuccess><calculation expression='"Falla procesando " &amp; [Nombre] &amp; ": " &amp; ExceptionDetail()' stage="Respuesta Mensaje" /></stage>
+<stage stageid="9a26b741-5bc0-5737-b03f-55e225fd7068" name="Mover a Errores (excepción)" type="Action"><subsheetid>9e0b1a88-acc3-54d9-aa39-88bcbebd5d0c</subsheetid><narrative></narrative><loginhibit onsuccess="true" /><display x="330" y="225" w="90" h="30" /><inputs><input type="text" name="Origen" expr="[Ruta]" /><input type="text" name="CarpetaDestino" expr="[Carpeta Errores]" /></inputs><outputs><output type="text" name="NuevaRuta" stage="Nueva Ruta" /></outputs><onsuccess>9d996445-a178-5485-a4c0-980526f68cf7</onsuccess><resource object="Teleton - API Conector" action="Mover Archivo" /></stage>
+<stage stageid="9d996445-a178-5485-a4c0-980526f68cf7" name="Resume" type="Resume"><subsheetid>9e0b1a88-acc3-54d9-aa39-88bcbebd5d0c</subsheetid><display x="330" y="285" w="60" h="30" /><onsuccess>897a8410-5ccc-5954-9e36-4e3271a8827f</onsuccess></stage>
+<stage stageid="3cc49b81-e417-58d4-9aaf-41edc4f6b507" name="Ruta" type="Data"><subsheetid>9e0b1a88-acc3-54d9-aa39-88bcbebd5d0c</subsheetid><narrative></narrative><display x="480" y="-255" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="387c8c78-28f8-50e1-bcdf-1b77d66f1492" name="Nombre" type="Data"><subsheetid>9e0b1a88-acc3-54d9-aa39-88bcbebd5d0c</subsheetid><narrative></narrative><display x="590" y="-255" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="b5ecbf7f-1e84-5b65-9120-ad38b6bd331b" name="Tipo" type="Data"><subsheetid>9e0b1a88-acc3-54d9-aa39-88bcbebd5d0c</subsheetid><narrative></narrative><display x="480" y="-210" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="91caf5a7-c46e-5551-93ab-8e2bcaeecac5" name="Datos" type="Collection"><subsheetid>9e0b1a88-acc3-54d9-aa39-88bcbebd5d0c</subsheetid><narrative></narrative><display x="590" y="-210" w="90" h="30" /><datatype>collection</datatype><private /><alwaysinit /></stage>
+<stage stageid="453a0b60-190b-561b-97a7-8349c2569575" name="Filas" type="Data"><subsheetid>9e0b1a88-acc3-54d9-aa39-88bcbebd5d0c</subsheetid><narrative></narrative><display x="480" y="-165" w="90" h="30" /><datatype>number</datatype><initialvalue xml:space="preserve">0</initialvalue><private /><alwaysinit /></stage>
+<stage stageid="64d91fd8-d2f1-5eb3-b59b-d07b89274676" name="Hoja" type="Data"><subsheetid>9e0b1a88-acc3-54d9-aa39-88bcbebd5d0c</subsheetid><narrative></narrative><display x="590" y="-165" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="db523d83-5e7d-5587-9887-539bd1af2575" name="Validos" type="Collection"><subsheetid>9e0b1a88-acc3-54d9-aa39-88bcbebd5d0c</subsheetid><narrative></narrative><display x="480" y="-120" w="90" h="30" /><datatype>collection</datatype><private /><alwaysinit /></stage>
+<stage stageid="16c5b3a3-53eb-5a61-8a2b-8ac6cac233c3" name="Errores" type="Collection"><subsheetid>9e0b1a88-acc3-54d9-aa39-88bcbebd5d0c</subsheetid><narrative></narrative><display x="590" y="-120" w="90" h="30" /><datatype>collection</datatype><private /><alwaysinit /><collectioninfo><field name="Fila" type="number" /><field name="Campo" type="text" /><field name="Valor" type="text" /><field name="Mensaje" type="text" /><field name="Severidad" type="text" /><field name="PersonaId" type="text" /></collectioninfo></stage>
+<stage stageid="199c2745-0b29-5634-9c9e-7d1a862da9b8" name="Cant Validos" type="Data"><subsheetid>9e0b1a88-acc3-54d9-aa39-88bcbebd5d0c</subsheetid><narrative></narrative><display x="480" y="-75" w="90" h="30" /><datatype>number</datatype><initialvalue xml:space="preserve">0</initialvalue><private /><alwaysinit /></stage>
+<stage stageid="62c301e8-b5a3-5553-b433-3ed97aee22b9" name="Cant Errores" type="Data"><subsheetid>9e0b1a88-acc3-54d9-aa39-88bcbebd5d0c</subsheetid><narrative></narrative><display x="590" y="-75" w="90" h="30" /><datatype>number</datatype><initialvalue xml:space="preserve">0</initialvalue><private /><alwaysinit /></stage>
+<stage stageid="980a4c71-5e86-57c1-918f-2ba296d318f0" name="Ruta CSV" type="Data"><subsheetid>9e0b1a88-acc3-54d9-aa39-88bcbebd5d0c</subsheetid><narrative></narrative><display x="480" y="-30" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="b8beda63-8b1b-5403-84aa-597bbc70a01f" name="Envio OK" type="Data"><subsheetid>9e0b1a88-acc3-54d9-aa39-88bcbebd5d0c</subsheetid><narrative></narrative><display x="590" y="-30" w="90" h="30" /><datatype>flag</datatype><initialvalue xml:space="preserve">False</initialvalue><private /><alwaysinit /></stage>
+<stage stageid="f4764d3d-7039-5b74-8cb7-088e4bcc7d2c" name="Ingesta Id" type="Data"><subsheetid>9e0b1a88-acc3-54d9-aa39-88bcbebd5d0c</subsheetid><narrative></narrative><display x="480" y="15" w="90" h="30" /><datatype>number</datatype><initialvalue xml:space="preserve">0</initialvalue><private /><alwaysinit /></stage>
+<stage stageid="02836d74-da57-5226-9f0d-eecc9b775629" name="Cambios" type="Data"><subsheetid>9e0b1a88-acc3-54d9-aa39-88bcbebd5d0c</subsheetid><narrative></narrative><display x="590" y="15" w="90" h="30" /><datatype>number</datatype><initialvalue xml:space="preserve">0</initialvalue><private /><alwaysinit /></stage>
+<stage stageid="00e0b55c-a16b-5f0e-a16a-491f0c2c6659" name="Respuesta Mensaje" type="Data"><subsheetid>9e0b1a88-acc3-54d9-aa39-88bcbebd5d0c</subsheetid><narrative></narrative><display x="480" y="60" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="2790b262-dd07-53b1-b135-740fc18dcfd6" name="Respuesta" type="Data"><subsheetid>9e0b1a88-acc3-54d9-aa39-88bcbebd5d0c</subsheetid><narrative></narrative><display x="590" y="60" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="2159e080-9462-51a1-93db-149a2e12804b" name="Nueva Ruta" type="Data"><subsheetid>9e0b1a88-acc3-54d9-aa39-88bcbebd5d0c</subsheetid><narrative></narrative><display x="480" y="105" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="f0f85a3d-f024-5d8d-9371-d54332964c16" name="Nota" type="Note"><subsheetid>9e0b1a88-acc3-54d9-aa39-88bcbebd5d0c</subsheetid><narrative>Valida cada fila ANTES de enviarla. Las filas con error no se envían como datos: quedan en un CSV en la carpeta de errores y se informan a la plataforma para que el equipo de planificación las vea.</narrative><display x="-240" y="-255" w="210" h="120" /></stage>
+<stage stageid="8c034725-e406-5f5c-927f-86cee51d0266" name="Start" type="Start"><subsheetid>888fbe95-c2ad-57ff-b99e-dcfc146971e9</subsheetid><loginhibit /><display x="15" y="-195" w="60" h="30" /><onsuccess>31edf189-dd45-5d0e-9698-48f1a0acb5c7</onsuccess></stage>
+<stage stageid="31edf189-dd45-5d0e-9698-48f1a0acb5c7" name="Obtener institutos" type="Action"><subsheetid>888fbe95-c2ad-57ff-b99e-dcfc146971e9</subsheetid><narrative></narrative><loginhibit onsuccess="true" /><display x="15" y="-135" w="90" h="30" /><inputs><input type="text" name="UrlBase" expr="[URL API]" /><input type="text" name="Token" expr="[Token]" /></inputs><outputs><output type="collection" name="Institutos" stage="Institutos" /></outputs><onsuccess>9970afa7-c75a-532d-b911-33498c7ee027</onsuccess><resource object="Teleton - API Conector" action="Obtener Institutos" /></stage>
+<stage stageid="9970afa7-c75a-532d-b911-33498c7ee027" name="Por cada instituto" type="LoopStart"><subsheetid>888fbe95-c2ad-57ff-b99e-dcfc146971e9</subsheetid><loginhibit /><display x="15" y="-75" w="90" h="30" /><onsuccess>1363c40f-c0cd-5e68-ad79-5677cb623198</onsuccess><groupid>0837179c-baa1-5758-88ac-887c52fd0aee</groupid><looptype>ForEach</looptype><loopdata>Institutos</loopdata></stage>
+<stage stageid="1363c40f-c0cd-5e68-ad79-5677cb623198" name="URL del PDF" type="Calculation"><subsheetid>888fbe95-c2ad-57ff-b99e-dcfc146971e9</subsheetid><loginhibit onsuccess="true" /><display x="15" y="-15" w="90" h="30" /><onsuccess>5af5368e-5b54-5382-988b-9e03d288fc24</onsuccess><calculation expression='[URL API] &amp; "/api/reportes/instituto/" &amp; [Institutos.IT] &amp; ".pdf"' stage="URL PDF" /></stage>
+<stage stageid="5af5368e-5b54-5382-988b-9e03d288fc24" name="Ruta del PDF" type="Calculation"><subsheetid>888fbe95-c2ad-57ff-b99e-dcfc146971e9</subsheetid><loginhibit onsuccess="true" /><display x="15" y="45" w="90" h="30" /><onsuccess>942342b6-7030-52bf-946e-450e1c98af4c</onsuccess><calculation expression='[Carpeta Reportes] &amp; "\" &amp; FormatDate(Today(), "yyyy-MM-dd") &amp; "\Planificacion_" &amp; [Institutos.Codigo] &amp; ".pdf"' stage="Ruta PDF" /></stage>
+<stage stageid="942342b6-7030-52bf-946e-450e1c98af4c" name="Descargar PDF" type="Action"><subsheetid>888fbe95-c2ad-57ff-b99e-dcfc146971e9</subsheetid><narrative></narrative><loginhibit onsuccess="true" /><display x="15" y="105" w="90" h="30" /><inputs><input type="text" name="Url" expr="[URL PDF]" /><input type="text" name="Token" expr="[Token]" /><input type="text" name="Ruta" expr="[Ruta PDF]" /></inputs><outputs><output type="flag" name="Exito" stage="Descarga OK" /><output type="number" name="Bytes" stage="Bytes" /></outputs><onsuccess>2742d877-b444-5d0f-b294-478bae3fbeaa</onsuccess><resource object="Teleton - API Conector" action="Descargar Archivo" /></stage>
+<stage stageid="2742d877-b444-5d0f-b294-478bae3fbeaa" name="Por cada instituto" type="LoopEnd"><subsheetid>888fbe95-c2ad-57ff-b99e-dcfc146971e9</subsheetid><loginhibit /><display x="15" y="165" w="90" h="30" /><onsuccess>a67e06cc-5a9d-55a4-8917-45c182b86f36</onsuccess><groupid>0837179c-baa1-5758-88ac-887c52fd0aee</groupid></stage>
+<stage stageid="a67e06cc-5a9d-55a4-8917-45c182b86f36" name="End" type="End"><subsheetid>888fbe95-c2ad-57ff-b99e-dcfc146971e9</subsheetid><loginhibit /><display x="15" y="225" w="60" h="30" /></stage>
+<stage stageid="92d50a4e-a6e9-5b12-90ff-b5207b1ee53a" name="Institutos" type="Collection"><subsheetid>888fbe95-c2ad-57ff-b99e-dcfc146971e9</subsheetid><narrative></narrative><display x="180" y="-135" w="90" h="30" /><datatype>collection</datatype><private /><alwaysinit /><collectioninfo><field name="IT" type="number" /><field name="Codigo" type="text" /><field name="Nombre" type="text" /></collectioninfo></stage>
+<stage stageid="bb74506f-4b4c-58e4-b1b8-3c915eb46359" name="URL PDF" type="Data"><subsheetid>888fbe95-c2ad-57ff-b99e-dcfc146971e9</subsheetid><narrative></narrative><display x="180" y="-75" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="c92e145c-9133-5aa1-85a3-9b1dfec17742" name="Ruta PDF" type="Data"><subsheetid>888fbe95-c2ad-57ff-b99e-dcfc146971e9</subsheetid><narrative></narrative><display x="180" y="-25" w="90" h="30" /><datatype>text</datatype><initialvalue /><private /><alwaysinit /></stage>
+<stage stageid="548bdf51-db96-5891-ab77-d3bdb858f7bc" name="Descarga OK" type="Data"><subsheetid>888fbe95-c2ad-57ff-b99e-dcfc146971e9</subsheetid><narrative></narrative><display x="300" y="-75" w="90" h="30" /><datatype>flag</datatype><initialvalue xml:space="preserve">False</initialvalue><private /><alwaysinit /></stage>
+<stage stageid="88923660-170d-5840-b5d4-5d444fcd35de" name="Bytes" type="Data"><subsheetid>888fbe95-c2ad-57ff-b99e-dcfc146971e9</subsheetid><narrative></narrative><display x="300" y="-25" w="90" h="30" /><datatype>number</datatype><initialvalue xml:space="preserve">0</initialvalue><private /><alwaysinit /></stage>
+<stage stageid="da4f9a46-1797-5f07-8f50-e1a9064743be" name="Nota" type="Note"><subsheetid>888fbe95-c2ad-57ff-b99e-dcfc146971e9</subsheetid><narrative>Distribución automática: deja en Carpeta Reportes\&lt;fecha&gt; un PDF por instituto. Opcional: agrega aquí una acción "Send Message" del VBO de Outlook para enviarlo a cada jefatura.</narrative><display x="-240" y="-195" w="210" h="100" /></stage>
+</process>
+</process>
+</bpr:contents>
+</bpr:release>

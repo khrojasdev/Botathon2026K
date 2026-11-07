@@ -1,0 +1,82 @@
+[
+ [
+  "DISMINUCION_JORNADA",
+  71558,
+  "42→33"
+ ],
+ [
+  "AUMENTO_JORNADA",
+  115921,
+  "22→33"
+ ],
+ [
+  "AUMENTO_JORNADA",
+  71505,
+  "30.0→42"
+ ],
+ [
+  "CAMBIO_CARGO",
+  71279,
+  "KINESIOLOGO→JEFE KINESIOLOGIA"
+ ],
+ [
+  "TERMINO_CONTRATO",
+  71960,
+  "15-08-2026"
+ ],
+ [
+  "BAJA",
+  71761,
+  "no informado"
+ ],
+ [
+  "BAJA",
+  72291,
+  "no informado"
+ ],
+ [
+  "ALTA",
+  150001,
+  "KINESIOLOGO 42h IT 51"
+ ],
+ [
+  "ALTA",
+  150002,
+  "FONOAUDIOLOGO 33h IT 131"
+ ],
+ [
+  "ALTA_REEMPLAZO",
+  150003,
+  "EDUCADOR 40h IT 91"
+ ],
+ [
+  "ERROR",
+  null,
+  "PersonaId vacío"
+ ],
+ [
+  "ERROR",
+  71247,
+  "50 h > jornada legal"
+ ],
+ [
+  "ERROR",
+  150010,
+  "cargo no homologado"
+ ],
+ [
+  "ERROR",
+  150011,
+  "término < ingreso"
+ ],
+ [
+  "ERROR",
+  74158,
+  "duplicado"
+ ],
+ [
+  "ERROR",
+  150012,
+  "horas no numéricas"
+ ]
+]

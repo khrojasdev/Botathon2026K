@@ -1,7 +1,7 @@
 // Ingesta de reportes BUK (dotación) y SIC (atenciones realizadas):
 // normaliza → valida → detecta cambios vs. planificación vigente → aplica desde la fecha en que rigen.
 import XLSX from 'xlsx';
-import { state, results, saveFila, saveAsignacion, addIngesta, addErrores, addCambio, saveSic, audit, nextFilaId, invalidate } from './store.js';
+import { state, results, saveFila, saveFilasBulk, saveAsignacion, addIngesta, addErrores, addCambio, saveSic, audit, nextFilaId, invalidate } from './store.js';
 import { jornadaLegal, baseSemanasVigencia, otrosPorRegla, MESES } from './engine.js';
 import { makeVersion } from './versions.js';
 
@@ -324,7 +324,7 @@ export async function aplicarBUK(validas, ingesta, user) {
       }
     }
   }
-  for (const id of tocadas) { const f = state.filas.find((x) => x.id === id); if (f) await saveFila(f); }
+  await saveFilasBulk([...tocadas].map((id) => state.filas.find((x) => x.id === id)).filter(Boolean));
   invalidate();
   const { res: resAfter } = results();
   // impacto anual en atenciones (total) por fila

@@ -55,6 +55,12 @@ export async function saveFila(f) {
   await persist(`insert into filas_plan (id, persona_id, it, cargo, cod_esp, data, activo, actualizado) values ($1,$2,$3,$4,$5,$6,$7, now())
     on conflict (id) do update set persona_id=$2, it=$3, cargo=$4, cod_esp=$5, data=$6, activo=$7, actualizado=now()`, FILA_COLS(f));
 }
+export async function saveFilasBulk(filas) {
+  invalidate();
+  if (!pool || !filas.length) return;
+  await bulk('filas_plan', ['id', 'persona_id', 'it', 'cargo', 'cod_esp', 'data', 'activo'], filas.map(FILA_COLS),
+    '(id) do update set persona_id=excluded.persona_id, it=excluded.it, cargo=excluded.cargo, cod_esp=excluded.cod_esp, data=excluded.data, activo=excluded.activo, actualizado=now()', 60);
+}
 export async function saveAsignacion(a) {
   invalidate();
   await persist(`insert into asignaciones (id, fila_id, nombre, horas, estado, requiere_autorizacion, solicitado_por, resuelto_por, motivo, comentario, creado, resuelto)
@@ -108,9 +114,11 @@ export async function addIngesta(ing) {
   return ing;
 }
 export async function addErrores(ingesta_id, errores) {
-  for (const e of errores) {
-    e.id = state.seq.error++; e.ingesta_id = ingesta_id;
-    state.ingestaErrores.push(e);
+  for (const e of errores) { e.id = state.seq.error++; e.ingesta_id = ingesta_id; state.ingestaErrores.push(e); }
+  await bulk('ingesta_errores', ['id', 'ingesta_id', 'fila', 'campo', 'valor', 'mensaje', 'origen', 'severidad', 'persona_id'],
+    errores.map((e) => [e.id, ingesta_id, e.fila, e.campo, e.valor == null ? null : String(e.valor), e.mensaje, e.origen || 'api', e.severidad || 'error', e.persona_id == null ? null : String(e.persona_id)]), '(id) do nothing');
+  return;
+  for (const e of []) {
     await persist(`insert into ingesta_errores (id, ingesta_id, fila, campo, valor, mensaje, origen, severidad, persona_id) values ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
       [e.id, ingesta_id, e.fila, e.campo, e.valor == null ? null : String(e.valor), e.mensaje, e.origen || 'api', e.severidad || 'error', e.persona_id == null ? null : String(e.persona_id)]);
   }

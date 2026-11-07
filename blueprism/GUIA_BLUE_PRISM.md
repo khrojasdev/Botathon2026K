@@ -116,6 +116,24 @@ Solo comprueba que la plataforma responda. Abre en el navegador:
 
 ---
 
+## Parte 6b · Robot v2: cola de trabajo + borradores de correo (10 min)
+
+La versión 2 (`Teleton - Ingesta BUK SIC v2`) hace lo mismo que la v1, pero:
+- **Cola de trabajo**: cada Excel encontrado entra como un ítem a la cola **Teleton - Reportes**. Si un archivo falla, el ítem queda como *excepción* con el motivo, y todo se ve en **Control Room → Queues**.
+- **Borradores de correo**: además del PDF, deja en `robot\Reportes\<fecha>\Correos` un archivo `.eml` por instituto, dirigido a la jefatura, con el PDF adjunto y un resumen (profesionales, atenciones, meta, cumplimiento, alertas). **No envía nada**: haces doble clic y se abre en Outlook para revisarlo y enviarlo.
+  Los correos de ejemplo son `jefatura.<código>@teleton.example`. Para usar correos reales, define el parámetro `correos_jefatura` (por IT) en la plataforma.
+
+Pasos:
+1. **File → Import → Release/Skill** y elige otra vez `Teleton - API Conector.bpobject` (reemplaza el objeto; trae la acción nueva *Preparar Correo*). Si pregunta, elige **Overwrite**.
+2. Importa `Teleton - Ingesta BUK SIC v2.bpprocess`.
+3. Crea la cola: **System → Workflow → Work Queues → Add**
+   - Name: `Teleton - Reportes`
+   - Key Field: `Nombre`
+   - Max Attempts: `1` → **Apply**.
+4. Abre el objeto en Object Studio y presiona **Check for errors**: deben ser **0 errores**.
+5. En el proceso v2 haz **Reset → Go**. Al terminar revisa: Control Room → Queues → *Teleton - Reportes* (ítems completados) y la carpeta `Correos`.
+6. Para dejarlo automático: en Studio, clic derecho sobre el proceso v2 → **Publish** (o en sus propiedades marca *Published*). Luego **Control Room → Schedules → New Schedule**: tarea = proceso v2 en tu máquina (*Resource*), repetir **cada 5 minutos**. Así, cuando Gestión de Personas deje un BUK nuevo en `Entrada`, en menos de 5 minutos la plataforma ya está recalculada.
+
 ## Parte 7 · Plan B si el XML no se importa
 
 Puedes armar lo mismo a mano en unos 20 minutos.

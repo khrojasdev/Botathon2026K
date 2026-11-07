@@ -48,16 +48,16 @@ export default function Proyeccion() {
             <div style={{ height: 300 }}>
               <ResponsiveContainer>
                 <ComposedChart data={n.serie} margin={{ top: 24, right: 16, left: 6 }}>
-                  <CartesianGrid stroke="#f0dfe1" vertical={false} />
+                  <CartesianGrid stroke="#eeeaeb" vertical={false} />
                   <XAxis dataKey="nombre" tick={{ fontSize: 12 }} />
                   <YAxis tickFormatter={(v) => fmt(v / 1000) + 'k'} tick={{ fontSize: 12 }} width={48} />
                   <Tooltip formatter={(v, nm) => [fmt(v), nm]} />
                   <Legend wrapperStyle={{ fontSize: 13 }} />
-                  <Area dataKey="planAcum" name="Planificado acumulado" fill="#ffd9dc" stroke="#d98a92" fillOpacity={0.6} />
-                  <Line dataKey="metaAcum" name="Meta de gestión acumulada" stroke="#160307" strokeDasharray="5 4" dot={false} strokeWidth={2} />
+                  <Area dataKey="planAcum" name="Planificado acumulado" fill="#fbe4e6" stroke="#eab4b9" fillOpacity={0.6} />
+                  <Line dataKey="metaAcum" name="Meta de gestión acumulada" stroke="#4d4346" strokeDasharray="5 4" dot={false} strokeWidth={2} />
                   <Line dataKey="realAcum" name="Realizado (SIC)" stroke="#e12d39" strokeWidth={3} dot={{ r: 3 }} connectNulls={false} />
                   <Line dataKey="proyAcum" name="Proyección" stroke="#e12d39" strokeDasharray="2 4" strokeWidth={3} dot={false} connectNulls />
-                  <ReferenceLine x={n.serie[n.ultimoMesReal - 1]?.nombre} stroke="#52afd4" label={{ value: 'hoy', fill: '#52afd4', fontSize: 12, position: 'top' }} />
+                  <ReferenceLine x={n.serie[n.ultimoMesReal - 1]?.nombre} stroke="#9b9093" label={{ value: 'hoy', fill: '#6f6568', fontSize: 12, position: 'top' }} />
                 </ComposedChart>
               </ResponsiveContainer>
             </div>

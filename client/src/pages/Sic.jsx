@@ -33,13 +33,13 @@ export default function Sic() {
             <div style={{ height: 300 }}>
               <ResponsiveContainer>
                 <BarChart data={data.porInst.filter((x) => x.cumplimiento != null)} margin={{ top: 10, right: 10 }}>
-                  <CartesianGrid stroke="#edf0f4" vertical={false} />
+                  <CartesianGrid stroke="#eeeaeb" vertical={false} />
                   <XAxis dataKey="codigo" tick={{ fontSize: 12 }} />
                   <YAxis tickFormatter={(v) => pct(v, 0)} domain={[0, 'auto']} tick={{ fontSize: 12 }} width={48} />
                   <Tooltip formatter={(v) => pct(v)} labelFormatter={(l) => data.porInst.find((x) => x.codigo === l)?.nombre} />
-                  <ReferenceLine y={1} stroke="#160307" strokeDasharray="4 4" label={{ value: 'Meta', fill: '#160307', fontSize: 12, position: 'right' }} />
+                  <ReferenceLine y={1} stroke="#4d4346" strokeDasharray="4 4" label={{ value: 'Meta', fill: '#4d4346', fontSize: 12, position: 'right' }} />
                   <Bar dataKey="cumplimiento" name="Cumplimiento">
-                    {data.porInst.filter((x) => x.cumplimiento != null).map((x) => <Cell key={x.it} fill={x.cumplimiento >= 1 ? '#1f7a4d' : x.cumplimiento >= 0.9 ? '#e8a33d' : '#e12d39'} />)}
+                    {data.porInst.filter((x) => x.cumplimiento != null).map((x) => <Cell key={x.it} fill={x.cumplimiento >= 1 ? '#2e7d5b' : x.cumplimiento >= 0.9 ? '#d99a2b' : '#e12d39'} />)}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>

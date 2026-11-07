@@ -31,10 +31,11 @@ export default function Login({ onLogin }) {
     <div className="login">
       <div className="art">
         <div>
+          <img className="logo" src="/logo-teleton.svg" alt="Teletón" />
           <h1>Cada hora<br />cuenta</h1>
           <p>Planificación asistencial de los Institutos Teletón: cuántas horas de cada profesional llegan a niños, niñas y jóvenes en rehabilitación, mes a mes, con reglas editables y trazabilidad completa.</p>
           <div className="clock" aria-hidden="true">{blocks.map((c, i) => <span key={i} className={c} />)}</div>
-          <p className="small" style={{ marginTop: 10 }}>Rojo: atención directa · celeste: indirecta · gris: no asistencial</p>
+          <p className="small" style={{ marginTop: 10 }}>Rojo: atención directa · rojo claro: indirecta · gris: no asistencial</p>
         </div>
         <p className="small">Botathon 2026 · Datos ficticios, sin nombres ni RUT. Acceso por rol según la Ley 19.628 / 21.719 de protección de datos.</p>
       </div>

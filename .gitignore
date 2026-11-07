@@ -4,4 +4,3 @@ client/dist/
 .env
 blueprism/csharp/*.exe
 *.log
-__pycache__/

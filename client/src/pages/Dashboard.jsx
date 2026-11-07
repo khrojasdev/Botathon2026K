@@ -93,7 +93,7 @@ function DashboardBody({ data, loading, sort, setSort, set, nav }) {
         <div style={{ height: 290 }}>
           <ResponsiveContainer>
             <ComposedChart data={data.porMes} margin={{ top: 10, right: 10, left: 6, bottom: 0 }}>
-              <CartesianGrid stroke="#edf0f4" vertical={false} />
+              <CartesianGrid stroke="#eeeaeb" vertical={false} />
               <XAxis dataKey="nombre" tick={{ fontSize: 12 }} />
               <YAxis tickFormatter={(v) => fmt(v / 1000) + 'k'} tick={{ fontSize: 12 }} width={44} />
               <Tooltip formatter={(v, n) => [fmt(v), n]} />
@@ -101,11 +101,11 @@ function DashboardBody({ data, loading, sort, setSort, set, nav }) {
               <Bar dataKey="planDir" name="Directas planificadas" stackId="a" fill="#e12d39">
                 {data.porMes.map((m) => <Cell key={m.mes} fillOpacity={m.seleccionado ? 1 : 0.3} />)}
               </Bar>
-              <Bar dataKey="planInd" name="Indirectas planificadas" stackId="a" fill="#52afd4">
+              <Bar dataKey="planInd" name="Indirectas planificadas" stackId="a" fill="#f2a0a6">
                 {data.porMes.map((m) => <Cell key={m.mes} fillOpacity={m.seleccionado ? 1 : 0.3} />)}
               </Bar>
-              <Line dataKey="mgDir" name={`Meta directas (${Math.round(meta * 100)}%)`} stroke="#160307" strokeDasharray="5 4" dot={false} strokeWidth={2} />
-              <Line dataKey="sic" name="Directas realizadas (SIC)" stroke="#1f7a4d" strokeWidth={2.5} dot={{ r: 3 }} connectNulls={false} />
+              <Line dataKey="mgDir" name={`Meta directas (${Math.round(meta * 100)}%)`} stroke="#4d4346" strokeDasharray="5 4" dot={false} strokeWidth={2} />
+              <Line dataKey="sic" name="Directas realizadas (SIC)" stroke="#2b2326" strokeWidth={2.5} dot={{ r: 3 }} connectNulls={false} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
@@ -171,7 +171,7 @@ function DashboardBody({ data, loading, sort, setSort, set, nav }) {
                 <YAxis type="category" dataKey="nombre" width={140} tick={{ fontSize: 12 }} />
                 <Tooltip formatter={(v, n) => [fmt(v), n]} />
                 <Bar dataKey="planDir" name="Directas" stackId="a" fill="#e12d39" cursor="pointer" onClick={(d) => set('cod_esp', d.key)} />
-                <Bar dataKey="planInd" name="Indirectas" stackId="a" fill="#52afd4" cursor="pointer" onClick={(d) => set('cod_esp', d.key)} />
+                <Bar dataKey="planInd" name="Indirectas" stackId="a" fill="#f2a0a6" cursor="pointer" onClick={(d) => set('cod_esp', d.key)} />
               </BarChart>
             </ResponsiveContainer>
           </div>

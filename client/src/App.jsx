@@ -65,7 +65,7 @@ function Shell({ children }) {
       <a href="#contenido" className="skip">Saltar al contenido</a>
       <nav className={`side ${open ? 'open' : ''}`} aria-label="Navegación principal">
         <NavLink to={user.rol === 'profesional' ? '/mi-plan' : '/'} className="brand">
-          <svg width="34" height="34" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14" fill="#fff" /><path d="M16 6 A10 10 0 0 1 26 16 L16 16Z" fill="#e12d39" /><path d="M26 16 A10 10 0 0 1 21 24.7 L16 16Z" fill="#52afd4" /><path d="M16 7v9l6 4" stroke="#160307" strokeWidth="2.6" fill="none" strokeLinecap="round" /></svg>
+          <img src="/logo-teleton.svg" alt="Teletón" />
           <span><b>Cada hora cuenta</b><small>Planificación asistencial 2026</small></span>
         </NavLink>
         {items.map((n) => (

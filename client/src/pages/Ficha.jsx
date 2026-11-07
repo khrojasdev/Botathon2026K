@@ -65,12 +65,12 @@ export function FichaView({ d, reload, readOnly }) {
           <div style={{ height: 250 }}>
             <ResponsiveContainer>
               <ComposedChart data={chart}>
-                <CartesianGrid stroke="#edf0f4" vertical={false} />
+                <CartesianGrid stroke="#eeeaeb" vertical={false} />
                 <XAxis dataKey="m" tick={{ fontSize: 12 }} /><YAxis tick={{ fontSize: 12 }} width={36} />
                 <Tooltip /><Legend wrapperStyle={{ fontSize: 13 }} />
                 <Bar dataKey="plan" name="Planificadas" fill="#e12d39" />
-                <Line dataKey="meta" name="Meta" stroke="#160307" strokeDasharray="5 4" dot={false} />
-                <Line dataKey="sic" name="Realizadas SIC" stroke="#1f7a4d" strokeWidth={2} />
+                <Line dataKey="meta" name="Meta" stroke="#4d4346" strokeDasharray="5 4" dot={false} />
+                <Line dataKey="sic" name="Realizadas SIC" stroke="#2b2326" strokeWidth={2} />
               </ComposedChart>
             </ResponsiveContainer>
           </div>

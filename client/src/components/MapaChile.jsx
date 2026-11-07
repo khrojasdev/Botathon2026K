@@ -18,7 +18,7 @@ export default function MapaChile({ items, seleccionado, onSelect, altura = 640,
   return (
     <svg viewBox={`-6 -6 ${ancho + 190} ${altura + 12}`} width="100%" style={{ maxWidth: ancho + 196, display: 'block', margin: '0 auto' }} role="img" aria-label={titulo || 'Mapa de institutos Teletón en Chile'}>
       <g transform={`scale(${escala})`}>
-        <path d={CHILE.d} fill="#f3e4e6" stroke="#d9b9be" strokeWidth={1 / escala} />
+        <path d={CHILE.d} fill="#f1eeee" stroke="#ddd5d6" strokeWidth={1 / escala} />
       </g>
       {[...puntos].sort((a, b) => b.tamano - a.tamano).map((p) => {
         const on = activo === p.it;
@@ -27,9 +27,9 @@ export default function MapaChile({ items, seleccionado, onSelect, altura = 640,
             onMouseEnter={() => setHover(p.it)} onMouseLeave={() => setHover(null)} onClick={() => onSelect?.(p.it)}
             tabIndex={onSelect ? 0 : -1} role={onSelect ? 'button' : undefined} aria-label={`${p.nombre}: ${p.etiqueta}`}
             onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onSelect?.(p.it)}>
-            <circle r={p.tamano + (on ? 3 : 0)} fill={p.color} fillOpacity={0.9} stroke={on ? '#160307' : '#fff'} strokeWidth={on ? 2.5 : 1.5} />
-            <line x1={p.tamano + 2} y1={0} x2={ancho - p.px + 14} y2={p.ly - p.py} stroke="#d9b9be" strokeWidth="0.8" />
-            <text x={ancho - p.px + 18} y={p.ly - p.py + 4} fontSize="12.5" fontWeight={on ? 800 : 600} fill="#160307" fontFamily="Atkinson Hyperlegible, sans-serif">
+            <circle r={p.tamano + (on ? 3 : 0)} fill={p.color} fillOpacity={0.9} stroke={on ? '#4d4346' : '#fff'} strokeWidth={on ? 2.5 : 1.5} />
+            <line x1={p.tamano + 2} y1={0} x2={ancho - p.px + 14} y2={p.ly - p.py} stroke="#ddd5d6" strokeWidth="0.8" />
+            <text x={ancho - p.px + 18} y={p.ly - p.py + 4} fontSize="12.5" fontWeight={on ? 800 : 600} fill="#4d4346" fontFamily="Atkinson Hyperlegible, sans-serif">
               {p.nombre} <tspan fill={p.color} fontWeight="800">{p.etiqueta}</tspan>
             </text>
           </g>

@@ -7,7 +7,7 @@ import { Panel, Kpi, Badge, useAsync, Loading, MotivoModal, useToast } from '../
 import MapaChile from '../components/MapaChile.jsx';
 import { fmt, pct, signed, MESES_L } from '../util.js';
 
-const VERDE = '#1f7a4d', AMBAR = '#e8a33d', ROJO = '#e12d39', GRIS = '#b9a6a9';
+const VERDE = '#2e7d5b', AMBAR = '#d99a2b', ROJO = '#e12d39', GRIS = '#c9c1c2';
 const METRICAS = {
   intensidad: { label: 'Atenciones por niño/a', fmt: (v) => fmt(v, 1), color: (v, o) => (v == null ? GRIS : v >= o ? VERDE : v >= o * 0.9 ? AMBAR : ROJO), get: (x) => x.intensidad },
   proyeccion: { label: 'Proyección a diciembre', fmt: (v) => pct(v, 0), color: (v) => (v == null ? GRIS : v >= 1 ? VERDE : v >= 0.95 ? AMBAR : ROJO), get: (x) => x.proyeccion.pct },
@@ -109,7 +109,7 @@ function Barra({ v, obj }) {
   return (
     <div style={{ position: 'relative', height: 12, background: 'var(--nas-soft)', borderRadius: 99 }} aria-hidden="true">
       <div style={{ width: `${(v / max) * 100}%`, height: '100%', borderRadius: 99, background: METRICAS.intensidad.color(v, obj) }} />
-      <div style={{ position: 'absolute', left: `${(obj / max) * 100}%`, top: -3, bottom: -3, width: 2, background: '#160307' }} title={`Objetivo ${obj}`} />
+      <div style={{ position: 'absolute', left: `${(obj / max) * 100}%`, top: -3, bottom: -3, width: 2, background: '#4d4346' }} title={`Objetivo ${obj}`} />
     </div>
   );
 }

@@ -14,6 +14,8 @@ import Parametros from './pages/Parametros.jsx';
 import Asignaciones from './pages/Asignaciones.jsx';
 import Validacion from './pages/Validacion.jsx';
 import MiPlan from './pages/MiPlan.jsx';
+import Cobertura from './pages/Cobertura.jsx';
+import Proyeccion from './pages/Proyeccion.jsx';
 
 const Ctx = createContext(null);
 export const useApp = () => useContext(Ctx);
@@ -22,6 +24,8 @@ const NAV = [
   { to: '/', label: 'Resumen nacional', perm: 'ver', group: 'Planificación', icon: '◔' },
   { to: '/planificacion', label: 'Profesionales', perm: 'ver', icon: '☰' },
   { to: '/sic', label: 'Plan vs. realizado', perm: 'ver', icon: '⇅' },
+  { to: '/cobertura', label: 'Cobertura y mapa', perm: 'ver', icon: '⌖' },
+  { to: '/proyeccion', label: 'Proyección a diciembre', perm: 'ver', icon: '↗' },
   { to: '/asignaciones', label: 'Asignaciones especiales', perm: 'ver', icon: '✚', badge: 'pend' },
   { to: '/ingestas', label: 'Reportes BUK / SIC', perm: 'ver_todo', group: 'Datos y control', icon: '⇪' },
   { to: '/trazabilidad', label: 'Cambios y versiones', perm: 'ver', icon: '⟲' },
@@ -124,6 +128,8 @@ export default function App() {
             {has('ver') && <Route path="/planificacion" element={<Planificacion />} />}
             <Route path="/profesional/:id" element={<Ficha />} />
             {has('ver') && <Route path="/sic" element={<Sic />} />}
+            {has('ver') && <Route path="/cobertura" element={<Cobertura />} />}
+            {has('ver') && <Route path="/proyeccion" element={<Proyeccion />} />}
             {has('ver') && <Route path="/asignaciones" element={<Asignaciones />} />}
             {has('ver_todo') && <Route path="/ingestas" element={<Ingestas />} />}
             {has('ver') && <Route path="/trazabilidad" element={<Trazabilidad />} />}

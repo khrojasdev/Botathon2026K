@@ -18,6 +18,8 @@ const GENERALES = [
   ['max_asignaciones_umbral_h', '…para profesionales con más de (h/sem)', 'n'],
   ['alerta_sic_umbral', 'Umbral de alerta plan vs. SIC', 'pct'],
   ['mes_inicio_proyeccion', 'Mes desde el que se proyecta (descuentos prorrateados)', 'n'],
+  ['intensidad_objetivo', 'Objetivo de atenciones por paciente al año (cobertura)', 'n'],
+  ['umbral_riesgo_proyeccion', 'Proyección bajo este % de la meta = no cumplirá', 'pct'],
 ];
 
 export default function Parametros() {

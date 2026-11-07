@@ -22,6 +22,7 @@ Plataforma que reemplaza el Excel de planificación asistencial: incorpora los r
 | Cambios durante el año | Al llegar un BUK nuevo se detectan altas, bajas, reemplazos, cambios de jornada/cargo/contrato/término y se aplican **desde el mes en que rigen** (meses anteriores quedan cerrados 🔒) |
 | Visibilidad | Resumen nacional → instituto → área → profesional, filtros por mes, zona, cargo, contrato, tramo |
 | Deseables | Trazabilidad (quién/qué/cuándo/por qué), versiones con aprobación y restauración, plan vs. SIC con alertas, multi-instituto, reemplazos, vacantes, aprobación DMN de asignaciones, **simulación** de parámetros antes de aplicar, distribución automática de PDF por instituto |
+| Extras que nos diferencian | **Cobertura y mapa**: atenciones por niño/a vs. pacientes proyectados en un mapa de Chile, brecha en profesionales equivalentes y simulador «¿y si contratamos?». **Proyección a diciembre**: con lo realizado en SIC estima si cada instituto, área y profesional llegará a la meta (alerta temprana) |
 | Accesibilidad | Tipografía Atkinson Hyperlegible (diseñada para baja visión), tamaño de texto A/A+/A++, alto contraste, navegación por teclado, lector de pantalla (ARIA), «Escuchar resumen» por voz |
 | Protección de datos | Roles con alcance (jefatura sólo ve su IT, profesional sólo su plan), auditoría de logins y exportaciones, sin nombres/RUT, sólo el **mes** de nacimiento (para el día de cumpleaños) |
 

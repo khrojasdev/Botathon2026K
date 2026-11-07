@@ -13,6 +13,7 @@ import { procesarIngesta, parseWorkbook, detectTipo } from './ingest.js';
 import { makeVersion, compararResumen, restaurarVersion } from './versions.js';
 import { loadVersionSnapshot } from './store.js';
 import { pdfDashboard, pdfPlanificacion, pdfFicha } from './pdf.js';
+import { insightsCobertura, simularContratacion, insightsProyeccion } from './insights.js';
 
 export const router = express.Router();
 const SECRET = process.env.JWT_SECRET || 'cada-hora-cuenta-dev-secret';
@@ -484,6 +485,23 @@ router.get('/versiones/:id/comparar', need('ver'), (req, res) => {
 router.post('/versiones/:id/restaurar', need('aprobar_version'), wrap(async (req, res) => {
   const motivo = motivoReq(req, res); if (!motivo) return;
   await restaurarVersion(req.user, Number(req.params.id), motivo);
+  res.json({ ok: true });
+}));
+
+// ---------------- cobertura, simulador y proyección ----------------
+router.get('/insights/cobertura', need('ver'), (req, res) => res.json(insightsCobertura(req.query, req.user)));
+router.post('/insights/simular', need('ver'), (req, res, next) => { try { res.json(simularContratacion(req.body || {})); } catch (e) { next(e); } });
+router.get('/insights/proyeccion', need('ver'), (req, res) => res.json(insightsProyeccion(req.query, req.user)));
+router.put('/insights/pacientes', need('parametros'), wrap(async (req, res) => {
+  const motivo = motivoReq(req, res); if (!motivo) return;
+  const { it, pacientes } = req.body || {};
+  const n = Number(pacientes);
+  if (!it || !(n > 0)) return res.status(400).json({ error: 'Indica instituto y pacientes proyectados (> 0)' });
+  const antes = state.params.pacientes_proyectados?.[it] ?? state.params.pacientes_proyectados?.[String(it)] ?? null;
+  state.params.pacientes_proyectados = { ...(state.params.pacientes_proyectados || DEFAULT_PARAMS.pacientes_proyectados), [it]: n };
+  await saveParamGeneral();
+  await addCambio({ persona_id: null, it: Number(it), fila_id: null, tipo: 'PARAMETRO', campo: 'pacientes proyectados', valor_anterior: antes, valor_nuevo: n, usuario: req.user.email, motivo, impacto: null });
+  await audit(req.user, 'editar_parametro', 'pacientes_proyectados', it, { antes, despues: n }, motivo);
   res.json({ ok: true });
 }));
 

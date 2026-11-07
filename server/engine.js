@@ -27,6 +27,11 @@ export const DEFAULT_PARAMS = {
   dias_visperas_navidad: 1,
   dias_descuento_anual_default: 5,
   vacaciones_feb_semanas: 3,
+  // Cobertura: atenciones (meta de gestión + LOP) por paciente único proyectado
+  intensidad_objetivo: 22,
+  pacientes_proyectados: { 11: 735.13, 12: 869.59, 21: 1265.16, 22: 753.22, 31: 751.41, 41: 1700.02, 51: 3742.64, 71: 2116.76, 81: 3533.09, 91: 2137.44, 101: 2137.6, 111: 688.96, 131: 11610, 141: 806.42 },
+  atenciones_lop: { 11: 615, 12: 1200, 21: 1538, 22: 1184, 31: 800, 41: 1900, 51: 4484, 71: 2930, 81: 4086, 91: 4154, 101: 2850, 111: 500, 131: 22070, 141: 1084 },
+  umbral_riesgo_proyeccion: 0.95,
 };
 
 export function tramoDe(x, p) {

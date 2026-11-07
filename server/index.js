@@ -6,6 +6,14 @@ import { fileURLToPath } from 'url';
 import { init, dbInfo } from './store.js';
 import { router } from './routes.js';
 
+// Carga variables desde .env (si existe) sin dependencias externas
+const envPath = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '.env');
+if (fs.existsSync(envPath)) {
+  for (const line of fs.readFileSync(envPath, 'utf8').split(/\r?\n/)) {
+    const m = line.match(/^\s*([A-Z_][A-Z0-9_]*)\s*=\s*(.*)\s*$/);
+    if (m && !process.env[m[1]]) process.env[m[1]] = m[2].replace(/^['"]|['"]$/g, '');
+  }
+}
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 app.disable('x-powered-by');

@@ -193,31 +193,28 @@ function applySeed(seed) {
   }
 }
 
+async function bulk(table, cols, rows, conflict = 'do nothing', chunk = 200) {
+  for (let i = 0; i < rows.length; i += chunk) {
+    const part = rows.slice(i, i + chunk);
+    const vals = []; const ph = [];
+    part.forEach((r, j) => { ph.push('(' + cols.map((_, k) => `$${j * cols.length + k + 1}`).join(',') + ')'); vals.push(...r); });
+    await persist(`insert into ${table} (${cols.join(',')}) values ${ph.join(',')} on conflict ${conflict}`, vals);
+  }
+}
+
 async function insertSeedToDb() {
-  for (const i of state.institutos) await persist('insert into institutos values ($1,$2,$3,$4,$5,$6) on conflict (it) do nothing', [i.it, i.codigo, i.nombre, i.zona, i.grupo_grupal, i.dias_adicionales_zona]);
-  await saveParamGeneral();
-  for (const c of state.cargos) await saveCargo(c);
-  for (const g of state.grupal) await saveGrupal(g);
-  for (const a of state.asignaciones_catalogo) await saveAsigCatalogo(a);
-  for (const c of state.calendario) await saveCalendario(c);
-  for (const f of state.feriados) await persist('insert into feriados (fecha, tipo, alcance) values ($1,$2,$3)', [f.fecha, f.tipo, f.alcance]);
-  // filas en lotes
-  const chunk = 100;
-  for (let i = 0; i < state.filas.length; i += chunk) {
-    const part = state.filas.slice(i, i + chunk);
-    const vals = []; const ph = [];
-    part.forEach((f, j) => { ph.push(`($${j * 7 + 1},$${j * 7 + 2},$${j * 7 + 3},$${j * 7 + 4},$${j * 7 + 5},$${j * 7 + 6},$${j * 7 + 7})`); vals.push(...FILA_COLS(f)); });
-    await persist(`insert into filas_plan (id, persona_id, it, cargo, cod_esp, data, activo) values ${ph.join(',')} on conflict (id) do nothing`, vals);
-  }
-  for (let i = 0; i < state.asignaciones.length; i += chunk) {
-    const part = state.asignaciones.slice(i, i + chunk);
-    const vals = []; const ph = [];
-    part.forEach((a, j) => { ph.push(`($${j * 9 + 1},$${j * 9 + 2},$${j * 9 + 3},$${j * 9 + 4},$${j * 9 + 5},$${j * 9 + 6},$${j * 9 + 7},$${j * 9 + 8},$${j * 9 + 9})`); vals.push(a.id, a.fila_id, a.nombre, a.horas, a.estado, a.requiere_autorizacion, a.solicitado_por, a.resuelto_por, a.motivo); });
-    await persist(`insert into asignaciones (id, fila_id, nombre, horas, estado, requiere_autorizacion, solicitado_por, resuelto_por, motivo) values ${ph.join(',')} on conflict (id) do nothing`, vals);
-  }
+  await bulk('institutos', ['it', 'codigo', 'nombre', 'zona', 'grupo_grupal', 'dias_adicionales_zona'], state.institutos.map((i) => [i.it, i.codigo, i.nombre, i.zona, i.grupo_grupal, i.dias_adicionales_zona]));
+  await bulk('param_general', ['clave', 'valor'], Object.entries(state.params).map(([k, v]) => [k, JSON.stringify(v)]), '(clave) do update set valor=excluded.valor');
+  await bulk('param_cargo', ['cargo', 'cod_esp', 'unidad', 'std_dir', 'std_ind', 't1', 't2', 't3'], state.cargos.map((c) => [c.cargo, c.cod_esp, c.unidad, c.std_dir, c.std_ind, JSON.stringify(c.t1), JSON.stringify(c.t2), JSON.stringify(c.t3)]));
+  await bulk('param_grupal', ['cod_esp', 'pct', 'pac_sancon', 'pac_otros'], state.grupal.map((g) => [g.cod_esp, g.pct, g.pac_sancon, g.pac_otros]));
+  await bulk('param_asignacion', ['nombre', 'horas', 'descripcion', 'requiere_autorizacion'], state.asignaciones_catalogo.map((a) => [a.nombre, a.horas, a.descripcion, !!a.requiere_autorizacion]));
+  await bulk('calendario', ['mes', 'dias', 'inhabiles', 'dias_habiles', 'semanas'], state.calendario.map((c) => [c.mes, c.dias, c.inhabiles, c.dias_habiles, c.semanas]));
+  await bulk('feriados', ['fecha', 'tipo', 'alcance'], state.feriados.map((f) => [f.fecha, f.tipo, f.alcance]), '(id) do nothing');
+  await bulk('filas_plan', ['id', 'persona_id', 'it', 'cargo', 'cod_esp', 'data', 'activo'], state.filas.map(FILA_COLS), '(id) do nothing', 60);
+  await bulk('asignaciones', ['id', 'fila_id', 'nombre', 'horas', 'estado', 'requiere_autorizacion', 'solicitado_por', 'resuelto_por', 'motivo'],
+    state.asignaciones.map((a) => [a.id, a.fila_id, a.nombre, a.horas, a.estado, a.requiere_autorizacion, a.solicitado_por, a.resuelto_por, a.motivo]));
   await persist(`select setval(pg_get_serial_sequence('asignaciones','id'), (select coalesce(max(id),1) from asignaciones))`);
-  for (const u of state.usuarios) await persist('insert into usuarios (id, email, nombre, rol, it, persona_id, password_hash) values ($1,$2,$3,$4,$5,$6,$7) on conflict (email) do nothing',
-    [u.id, u.email, u.nombre, u.rol, u.it || null, u.persona_id || null, u.password_hash]);
+  await bulk('usuarios', ['id', 'email', 'nombre', 'rol', 'it', 'persona_id', 'password_hash'], state.usuarios.map((u) => [u.id, u.email, u.nombre, u.rol, u.it || null, u.persona_id || null, u.password_hash]), '(email) do nothing');
 }
 
 function seedUsers() {
@@ -238,7 +235,7 @@ export async function init() {
   const seed = JSON.parse(fs.readFileSync(seedPath, 'utf8'));
   if (url) {
     try {
-      pool = new pg.Pool({ connectionString: url, ssl: url.includes('localhost') ? false : { rejectUnauthorized: false }, max: 5 });
+      pool = new pg.Pool({ connectionString: url, ssl: url.includes('localhost') ? false : { rejectUnauthorized: false }, max: 5, idleTimeoutMillis: 0, keepAlive: true, connectionTimeoutMillis: 15000 });
       await pool.query(fs.readFileSync(schemaPath, 'utf8'));
       dbInfo.mode = 'supabase/postgres';
     } catch (e) {
